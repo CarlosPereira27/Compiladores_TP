@@ -1,0 +1,27 @@
+/*Não reconhece letra maiúscula*/
+int A;
+float Z;
+
+/*Após um ponto é esperado um dígito*/
+float num = 20.-; int a = 5; float d = 14.e; int b = 10; 
+num = 20.digito;
+num = 20.+;
+num = 20.{;
+num = 20.else;
+
+/*Após a letra E de exponenciação ou o sinal opcional é esperado um dígito*/
+float outronum = 20.5E;
+outronum = 20.5E-;
+outronum = 20.5E+;
+outronum = 20E-;
+outronum = 20.5Edigito;
+outronum = 20.5Ewhile;
+outronum = 20.5E;
+
+/*
+.10
+20.
+10E
+10E-
+A1E.
+ABC
