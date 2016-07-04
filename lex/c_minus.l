@@ -6,8 +6,10 @@
 #include <math.h>
 #include "tabelaDeSimbolos/TabelaDeSimbolos.h"
 #include "y.tab.h"
+#include "strings/erros_lexcos.h"
 
 void yyerror(char *);
+void lexerror(int lin, int col, char *ytext, char *msg);
 
 %}
 
@@ -121,20 +123,21 @@ return			{ colCount+=6;
 			return (NUM); }
 {ident}			{ colCount+=strlen(yytext);
 			yylval = installIdent(yytext);
-			return (IDENT); }
+			return (IDENT);}
+
 {erroLetraMaiuscula}	{ colCount+=strlen(yytext);
 			fprintf(yyout, "Linha:%d; Lexical error. Input -> \"%s\".\n", lineCount, yytext); 
-			fprintf(yyout, "Não reconhece letras em caixa alta.\n"); }
+			fprintf(yyout, LETRAS_CAIXA_ALTA); }
 {other}			{ colCount+=strlen(yytext);
 			fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount-(int)strlen(yytext), yytext); }
 {erroPontoSemDigito}	{ if(yytext[strlen(yytext)-1] == '\n') { 
 				yytext[strlen(yytext)-1] = '\0';
-			} fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\". ", lineCount, colCount, yytext);
+			} fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount, yytext);
 			colCount=1; lineCount++;
-			fprintf(yyout, "Era esperado um dígito após o ponto.\n"); }	
-{erroNumESemDigito}	{ fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\". ", lineCount, colCount, yytext);
+			fprintf(yyout, DIGITO_APOS_O_PONTO); }	
+{erroNumESemDigito}	{ fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount, yytext);
 			colCount=1; lineCount++;
-			fprintf(yyout, "Era esperado um dígito após a letra E ou o sinal opcional.\n"); }
+			fprintf(yyout, LETRA_OU_SINAL_OPCIONAL); }
 
 %%
 /*------------------------ User subrotines ------------------------*/

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <math.h>
 //#include "tabelaDeSimbolos/TabelaDeSimbolos.h"
+#include "strings/erros_sintaticos.h"
 
 int yylex(void);
 void yyerror(char *);
