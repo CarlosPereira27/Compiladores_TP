@@ -1,5 +1,11 @@
-compile:
-	./c_minus.sh
+compile: analisador-lexico analisador-sintatico
+	gcc lex.yy.c y.tab.c -o c_minus -lm
+
+analisador-sintatico:
+	yacc -d yacc/c_minus.y
+
+analisador-lexico:
+	lex lex/c_minus.l
 
 clean : 
 	rm -rf lex.yy.c 
