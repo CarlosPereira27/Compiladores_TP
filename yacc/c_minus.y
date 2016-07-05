@@ -10,10 +10,14 @@ int yylex(void);
 void yyerror(char *);
 %}
 
-%token INT FLOAT CHAR STRUCT VOID IF ELSE ATRIBUICAO WHILE RETURN IDENT ABRE_CHAVE FECHA_CHAVE ABRE_COLCHETE FECHA_COLCHETE ABRE_PARENTESES FECHA_PARENTESES PONTO_VIRGULA VIRGULA NUM_INT NUM RELOP LT LE EQ NE GT GE SOMA SUBTRACAO MULT DIV
+%token INT FLOAT CHAR STRUCT VOID IF ELSE ATRIBUICAO WHILE RETURN IDENT ABRE_CHAVE FECHA_CHAVE 
+       ABRE_COLCHETE FECHA_COLCHETE ABRE_PARENTESES FECHA_PARENTESES PONTO_VIRGULA VIRGULA 
+       NUM_INT NUM RELOP LT LE EQ NE GT GE SOMA SUBTRACAO MULT DIV
 
 %nonassoc THEN
 %nonassoc ELSE
+
+%start programa
 
 %%
 
@@ -48,11 +52,16 @@ var_dimensao:
 	;
 
 tipo_especificador:
-	INT	{ printf("tipo_especificador\n"); }
+	INT
 	| FLOAT
 	| CHAR
 	| VOID
-	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE
+	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE 
+	| error IDENT {yyerrok, printf("nao é possivel indentificar o token antes do identificador : %d\n", yychar);}
+	| error ABRE_CHAVE {yyerrok, printf("erro esperado um ident antes de abrir chaves : %d\n", yychar);} // yychar retorna quantas posicoes atras occorreu o erro
+	| error atributos_declaracao{yyerrok, printf("erro esperado um abre chaves antes dos atributos de declaracao : %d\n", yychar);}
+	| error FECHA_CHAVE {yyerrok, printf("erro esperado uma declaracao antes de fechar chaves : %d\n", yychar);}
+	
 	;
 
 atributos_declaracao:
