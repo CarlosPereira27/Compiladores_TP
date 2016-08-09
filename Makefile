@@ -1,5 +1,5 @@
 compile: analisador-lexico analisador-sintatico
-	gcc lex.yy.c y.tab.c -o c_minus -lm
+	gcc lex.yy.c y.tab.c -o c_minus -lm -w
 
 analisador-sintatico:
 	yacc -d yacc/c_minus.y

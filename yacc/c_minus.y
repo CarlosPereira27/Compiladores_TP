@@ -22,12 +22,12 @@ void yyerror(char *);
 %%
 
 programa:
-	declaracao_lista { printf("é um programa\n"); }
+	declaracao_lista
 	;
 
 declaracao_lista:
 	declaracao declaracao_seq
-	| declaracao	{ printf("declaracao_lista\n"); }
+	| declaracao
 	;
 
 declaracao_seq:
@@ -36,14 +36,24 @@ declaracao_seq:
 	;
 
 declaracao:
-	var_declaracao	{ printf("declaracao\n"); }
+	var_declaracao
 	| fun_declaracao
 	;
 
 var_declaracao:
-	tipo_especificador IDENT PONTO_VIRGULA	{ printf("var_declaracao\n"); }
+	tipo_especificador IDENT PONTO_VIRGULA
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE var_dimensao PONTO_VIRGULA
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE PONTO_VIRGULA
+
+
+//Erros var_declaracao
+	| error IDENT 
+	{yyerrok, yyclearin, printf("Tipo especificador não é reconhecido :%s, %d, %d\n",
+	 getValorLexicoDoToken($1), getLineCount() , 	getColCount()-getTamanhoLexicoDoToken($1));}
+
+	| error PONTO_VIRGULA {yyerrok, yyclearin, printf("Contrução invalida tipo especificador ou identificador não é reconhecido  : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+	| error FECHA_COLCHETE {yyerrok, yyclearin, printf("Esperado uma declaracao antes de fechar o colchete  : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+//	| error ';'{yyerrok, yyclearin,printf("tipo especificador não é reconhecido");}
 	;
 
 var_dimensao:
@@ -57,10 +67,9 @@ tipo_especificador:
 	| CHAR
 	| VOID
 	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE 
-	| error IDENT {yyerrok, printf("nao é possivel indentificar o token antes do identificador : %d\n", yychar);}
-	| error ABRE_CHAVE {yyerrok, printf("erro esperado um ident antes de abrir chaves : %d\n", yychar);} // yychar retorna quantas posicoes atras occorreu o erro
-	| error atributos_declaracao{yyerrok, printf("erro esperado um abre chaves antes dos atributos de declaracao : %d\n", yychar);}
-	| error FECHA_CHAVE {yyerrok, printf("erro esperado uma declaracao antes de fechar chaves : %d\n", yychar);}
+	| STRUCT error ABRE_CHAVE {yyerrok, yyclearin, printf("erro esperado um ident antes de abrir chaves : %s, %d, %d\n", getValorLexicoDoToken($2), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+	| error atributos_declaracao{yyerrok, yyclearin, printf("erro esperado um abre chaves antes dos atributos de declaracao : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+	| error FECHA_CHAVE {yyerrok, yyclearin, printf("erro esperado uma declaracao antes de fechar chaves : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 	
 	;
 
@@ -76,6 +85,8 @@ var_declaracao_seq:
 
 fun_declaracao:
 	tipo_especificador IDENT ABRE_PARENTESES params FECHA_PARENTESES composto_decl
+	| error ABRE_PARENTESES {yyerrok, yyclearin, printf("erro esperado um tipo especificador ou identificador antes de abrir parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+	| error FECHA_PARENTESES {yyerrok, yyclearin, printf("erro esperado parametros de fechar parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 	;
 
 params:

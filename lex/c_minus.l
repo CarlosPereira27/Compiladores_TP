@@ -10,7 +10,7 @@
 
 void yyerror(char *);
 void lexerror(int lin, int col, char *ytext, char *msg);
-
+extern int yylval;
 %}
 
 num			[+-]?{digito}+(\.{digito}+)?(E[+-]?{digito}+)?
@@ -51,78 +51,101 @@ erroNumESemDigito	{erroNumESemDigito1}|{erroNumESemDigito2}
 /*----------------------------- Rules -----------------------------*/
 %}
 {espaco}		{ colCount++; } 	
-{quebra-linha}		{ colCount=1; lineCount++; }
-{ponto-virgula}		{ colCount++; 
+{quebra-linha}		{ colCount=1;
+			lineCount++; }
+{ponto-virgula}		{ colCount++;
+			yylval = 17;
 			return (PONTO_VIRGULA); }
 {virgula}		{ colCount++;
+			yylval = 18;
 			return (VIRGULA); }
 {abre-chave}		{ colCount++;
+			yylval = 11;
 			return (ABRE_CHAVE); }
 {fecha-chave}		{ colCount++;
+			yylval = 12;
 			return (FECHA_CHAVE); }
-{abre-colchete}		{ colCount++;
+{abre-colchete}		{ colCount++;	
+			yylval = 13;
 			return (ABRE_COLCHETE); }
 {fecha-colchete}	{ colCount++;
+			yylval = 14;
 			return (FECHA_COLCHETE); }
 {abre-parenteses}	{ colCount++;
+			yylval = 15;
 			return (ABRE_PARENTESES); }      
 {fecha-parenteses}	{ colCount++;
+			yylval = 16;
 			return (FECHA_PARENTESES); } 
 "<"			{ colCount++;
-			yylval = LT;
+			yylval = 19;
 			return (RELOP); } 
 "<="			{ colCount+=2;
-			yylval = LE;
+			yylval = 20;
 			return (RELOP); } 
 ">"			{ colCount++;
-			yylval = GT;
+			yylval = 23;
 			return (RELOP); } 
 ">="			{ colCount+=2;
-			yylval = GE;
+			yylval = 24;
 			return (RELOP); } 
 "=="			{ colCount+=2;
-			yylval = EQ;
+			yylval = 21;
 			return (RELOP); } 
 "!="			{ colCount+=2;
-			yylval = NE;
+			yylval = 22;
 			return (RELOP); } 
 int			{ colCount+=3;
+			yylval = 0;
 			return (INT); } 
 float			{ colCount+=5;
+			yylval = 1;
 			return (FLOAT); } 
 char			{ colCount+=4;
+			yylval = 2;
 			return (CHAR); } 
 struct			{ colCount+=6;
+			yylval = 3;
 			return (STRUCT); } 
 void			{ colCount+=4;
+			yylval = 4;
 			return (VOID); } 
 if			{ colCount+=2;
+			yylval = 6;			
 			return (IF); } 
 else			{ colCount+=4;
+			yylval = 7;
 			return (ELSE); } 
 "="			{ colCount++;
+			yylval = 8;
 			return (ATRIBUICAO); } 
 while			{ colCount+=5;
+			yylval = 9;
 			return (WHILE); } 
 return			{ colCount+=6;
+			yylval = 10;
 			return (RETURN); } 
 "-"			{ colCount++;
+			yylval = 26;
 			return (SUBTRACAO); } 
 "+"			{ colCount++;
+			yylval = 25;
 			return (SOMA); } 
 "*"			{ colCount++;
+			yylval = 27;
 			return (MULT); } 
 "/"			{ colCount++;
+			yylval = 28;
 			return (DIV); } 
 {comentario}		{ atualizarLineEColCount(yytext); /*fprintf(yyout,"%s (COMENTARIO)\n", yytext);*/ }
 {num-int}		{ colCount+=strlen(yytext); 
-			yylval = installNum_int(atoi(yytext));
+			yylval = install(yytext);
 			return (NUM_INT); }
 {num}			{ colCount+=strlen(yytext); 
-			yylval = installNum(atof(yytext),strlen(yytext)); 
+			yylval = install(yytext); 
 			return (NUM); }
 {ident}			{ colCount+=strlen(yytext);
-			yylval = installIdent(yytext);
+			yylval = install(yytext);
 			return (IDENT);}
 
 {erroLetraMaiuscula}	{ colCount+=strlen(yytext);
@@ -153,7 +176,7 @@ void atualizarLineEColCount(char* string) {
 	}
 }
 
-int installIdent(char* lexema) {
+/*int installIdent(char* lexema) {
 	int i;
 	for(i = 0; i < simbolosIdentCount; i++) {
 		if(strcmp(lexema, tabelaSimbolosIdent[i]) == 0) {
@@ -173,8 +196,46 @@ int installNum_int(int numInt) {
 	}
 	tabelaSimbolosNum_int[simbolosNum_intCount] = numInt;
 	return simbolosNum_intCount++;
+}*/
+
+void installPalavrasReservadas() {
+	strcpy(tabelaSimbolos[0], "int");
+	strcpy(tabelaSimbolos[1], "float");
+	strcpy(tabelaSimbolos[2], "char");
+	strcpy(tabelaSimbolos[3], "struct");
+	strcpy(tabelaSimbolos[4], "void");
+	strcpy(tabelaSimbolos[6], "if");
+	strcpy(tabelaSimbolos[7], "else");
+	strcpy(tabelaSimbolos[8], "=");
+	strcpy(tabelaSimbolos[9], "while");
+	strcpy(tabelaSimbolos[10], "return");
+	strcpy(tabelaSimbolos[11], "{");
+	strcpy(tabelaSimbolos[12], "}");
+	strcpy(tabelaSimbolos[13], "[");
+	strcpy(tabelaSimbolos[14], "]");
+	strcpy(tabelaSimbolos[15], "(");
+	strcpy(tabelaSimbolos[16], ")");
+	strcpy(tabelaSimbolos[17], ";");
+	strcpy(tabelaSimbolos[18], ",");
+	strcpy(tabelaSimbolos[19], "<");
+	strcpy(tabelaSimbolos[20], "<=");
+	strcpy(tabelaSimbolos[21], "==");
+	strcpy(tabelaSimbolos[22], "!=");
+	strcpy(tabelaSimbolos[23], ">");
+	strcpy(tabelaSimbolos[24], ">=");
+	strcpy(tabelaSimbolos[25], "+");
+	strcpy(tabelaSimbolos[26], "-");
+	strcpy(tabelaSimbolos[27], "*");
+	strcpy(tabelaSimbolos[28], "/");
+	simbolosCount = 29;
 }
 
+int install(char* token) {
+	strcpy(tabelaSimbolos[simbolosCount], token);	
+	return simbolosCount++;
+}
+
+/*
 int installNum(float num, int tamanho) {
 	int i;
 	for(i = 0; i < simbolosNumCount; i++) {
@@ -226,9 +287,72 @@ void exibirToken(int value) {
 	case NUM: printf("Coluna:%d; Lexema:%f; Token:<NUM,ID%d>\n", colCount-tabelaSimbolosNumQtdCaracteres[yylval], tabelaSimbolosNum[yylval], yylval); break;
 	case IDENT: printf("Coluna:%d; Lexema:%s; Token:<IDENT,ID%d>\n", colCount-(int)strlen(tabelaSimbolosIdent[yylval]), tabelaSimbolosIdent[yylval], yylval); break;
 	}
+}*/
+
+int getLineCount() {
+	return lineCount;
 }
 
-/*int main(int argc, char *argv[]){
+int getColCount() {
+	return colCount;
+}
+
+int getTamanhoLexicoDoToken(int posicaoTabelaDeSimbolos) {
+	return strlen(tabelaSimbolos[posicaoTabelaDeSimbolos]);
+}
+
+char* getValorLexicoDoToken(int posicaoTabelaDeSimbolos) {
+	return tabelaSimbolos[posicaoTabelaDeSimbolos];
+}
+
+void setEntrada(char* arquivo) {
+	yyin = fopen(arquivo, "r");
+    	yyout=stdout;
+}
+
+/*int getTamanhoToken(int token) {
+	printf("%d\n", token);
+	switch(token) {
+	case INT: return 3;
+	case FLOAT: return 5;
+	case CHAR: return 4;
+	case STRUCT: return 6;
+	case VOID: printf("Coluna:%d; Lexema:void; Token:VOID\n", colCount-4); break;
+	case IF: printf("Coluna:%d; Lexema:if; Token:IF\n", colCount-2); break;
+	case ELSE: printf("Coluna:%d; Lexema:else; Token:ELSE\n", colCount-4); break;
+	case ATRIBUICAO: printf("Coluna:%d; Lexema:=; Token:ATRIBUICAO\n", colCount-1); break;
+	case WHILE: printf("Coluna:%d; Lexema:while; Token:WHILE\n", colCount-5); break;
+	case RETURN: printf("Coluna:%d; Lexema:return; Token:RETURN\n", colCount-6); break;
+	case ABRE_CHAVE: printf("Coluna:%d; Lexema:{; Token:ABRE_CHAVE\n", colCount-1); break;
+	case FECHA_CHAVE: printf("Coluna:%d; Lexema:}; Token:FECHA_CHAVE\n", colCount-1); break;
+	case ABRE_COLCHETE: printf("Coluna:%d; Lexema:[; Token:ABRE_COLCHETE\n", colCount-1); break;
+	case FECHA_COLCHETE: printf("Coluna:%d; Lexema:]; Token:FECHA_COLCHETE\n", colCount-1); break;
+	case ABRE_PARENTESES: printf("Coluna:%d; Lexema:(; Token:ABRE_PARENTESES\n", colCount-1); break;
+	case FECHA_PARENTESES: printf("Coluna:%d; Lexema:); Token:FECHA_PARENTESES\n", colCount-1); break;
+	case PONTO_VIRGULA: printf("Coluna:%d; Lexema:;; Token:PONTO_VIRGULA\n", colCount-1); break;
+	case VIRGULA: printf("Coluna:%d; Lexema:,; Token:VIRGULA\n", colCount-1); break;
+	case RELOP: 
+		switch(yylval) {
+		case LT: printf("Coluna:%d; Lexema:<; Token:RELOP->LT\n", colCount-1); break;
+		case LE: printf("Coluna:%d; Lexema:<=; Token:RELOP->LE\n", colCount-2); break;
+		case EQ: printf("Coluna:%d; Lexema:==; Token:RELOP->EQ\n", colCount-2); break;
+		case NE: printf("Coluna:%d; Lexema:!=; Token:RELOP->NE\n", colCount-2); break;
+		case GT: printf("Coluna:%d; Lexema:>; Token:RELOP->GT\n", colCount-1); break;
+		case GE: printf("Coluna:%d; Lexema:>=; Token:RELOP->GE\n", colCount-2); break;
+		}; break;
+	case SOMA: printf("Coluna:%d; Lexema:+; Token:SOMA\n", colCount-1); break;
+	case SUBTRACAO: printf("Coluna:%d; Lexema:-; Token:SUBTRACAO\n", colCount-1); break;
+	case MULT: printf("Coluna:%d; Lexema:*; Token:MULT\n", colCount-1); break;
+	case DIV: printf("Coluna:%d; Lexema:/; Token:DIV\n", colCount-1); break;
+	case NUM_INT: printf("Coluna:%d; Lexema:%d; Token:<NUM_INT,ID%d>\n", colCount-((int)log10(tabelaSimbolosNum_int[yylval]))-1, tabelaSimbolosNum_int[yylval], yylval); break;
+	case NUM: printf("Coluna:%d; Lexema:%f; Token:<NUM,ID%d>\n", colCount-tabelaSimbolosNumQtdCaracteres[yylval], tabelaSimbolosNum[yylval], yylval); break;
+	case IDENT: printf("Coluna:%d; Lexema:%s; Token:<IDENT,ID%d>\n", colCount-(int)strlen(tabelaSimbolosIdent[yylval]), tabelaSimbolosIdent[yylval], yylval); break;
+	default: return -1;
+	}
+	return -1;
+}
+
+int main(int argc, char *argv[]){
    	yyin = fopen(argv[1], "r");
     	yyout=stdout;
 	while(1) {

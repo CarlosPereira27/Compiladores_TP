@@ -1,5 +1,6 @@
 #include "TabelaDeSimbolos.h"
 
+
 void atualizarLineEColCount(char* string) {
 	int i;
 	for(i = 0; i < strlen(string); i++) {
@@ -10,7 +11,7 @@ void atualizarLineEColCount(char* string) {
 		}
 	}
 }
-
+/*
 int installIdent(char* lexema) {
 	int i;
 	for(i = 0; i < simbolosIdentCount; i++) {
@@ -44,3 +45,17 @@ int installNum(float num, int tamanho) {
 	tabelaSimbolosNumQtdCaracteres[simbolosNumCount] = tamanho;
 	return simbolosNumCount++;
 }
+
+int tamanhoToken(int token) {
+
+	return 0;
+}
+
+int getLineCount() {
+	return lineCount;
+}
+
+int getColCount() {
+	return colCount;
+}/*
+
