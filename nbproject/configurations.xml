@@ -2,6 +2,9 @@
 <configurationDescriptor version="97">
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
+      <df name="tabelaDeSimbolos">
+        <in>newmain.c</in>
+      </df>
       <in>lex.yy.c</in>
       <in>y.tab.c</in>
     </df>
@@ -40,6 +43,8 @@
         </preBuild>
       </makefileType>
       <item path="lex.yy.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="tabelaDeSimbolos/newmain.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="y.tab.c" ex="false" tool="0" flavor2="0">
       </item>
