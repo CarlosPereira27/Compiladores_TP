@@ -3,11 +3,15 @@
 #include <malloc.h>
 #include <string.h>
 #include <math.h>
-//#include "tabelaDeSimbolos/TabelaDeSimbolos.h"
+#include "tabelaDeSimbolos/TabelaDeSimbolos.h"
 #include "strings/erros_sintaticos.h"
+
+Array a;
 
 int yylex(void);
 void yyerror(char *);
+void teste();
+
 %}
 
 %token INT FLOAT CHAR STRUCT VOID IF ELSE ATRIBUICAO WHILE RETURN IDENT ABRE_CHAVE FECHA_CHAVE 
@@ -24,10 +28,10 @@ void yyerror(char *);
 programa:
 	declaracao_lista
 	;
-
+f
 declaracao_lista:
-	declaracao declaracao_seq
-	| declaracao
+	declaracao declaracao_seq {printf("Decalaracao lista\n");}
+	| declaracao {printf("Decalaracao simples\n");}
 	;
 
 declaracao_seq:
@@ -36,16 +40,17 @@ declaracao_seq:
 	;
 
 declaracao:
-	var_declaracao
-	| fun_declaracao
+	var_declaracao {printf("var declaracao\n");}
+	| fun_declaracao {printf("fun declaracao\n");}
 	;
 
 var_declaracao:
-	tipo_especificador IDENT PONTO_VIRGULA
+	tipo_especificador IDENT PONTO_VIRGULA {printf("tipo ident ;%d\n",$1);}
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE var_dimensao PONTO_VIRGULA
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE PONTO_VIRGULA
 
 
+/*
 //Erros var_declaracao
 	| error IDENT 
 	{yyerrok, yyclearin, printf("Tipo especificador não é reconhecido :%s, %d, %d\n",
@@ -55,6 +60,8 @@ var_declaracao:
 	| error FECHA_COLCHETE {yyerrok, yyclearin, printf("Esperado uma declaracao antes de fechar o colchete  : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 //	| error ';'{yyerrok, yyclearin,printf("tipo especificador não é reconhecido");}
 	;
+*/
+	;
 
 var_dimensao:
 	ABRE_COLCHETE NUM_INT FECHA_COLCHETE
@@ -62,14 +69,17 @@ var_dimensao:
 	;
 
 tipo_especificador:
-	INT
-	| FLOAT
-	| CHAR
-	| VOID
-	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE 
+	INT {$$ = $1;}
+	| FLOAT {$$ = $1;}
+	| CHAR	{$$ = $1;}
+	| VOID	{$$ = $1;}
+	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE {$$ = $2;}
+
+/*
 	| STRUCT error ABRE_CHAVE {yyerrok, yyclearin, printf("erro esperado um ident antes de abrir chaves : %s, %d, %d\n", getValorLexicoDoToken($2), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 	| error atributos_declaracao{yyerrok, yyclearin, printf("erro esperado um abre chaves antes dos atributos de declaracao : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 	| error FECHA_CHAVE {yyerrok, yyclearin, printf("erro esperado uma declaracao antes de fechar chaves : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+*/
 	
 	;
 
@@ -85,8 +95,11 @@ var_declaracao_seq:
 
 fun_declaracao:
 	tipo_especificador IDENT ABRE_PARENTESES params FECHA_PARENTESES composto_decl
+
+/*
 	| error ABRE_PARENTESES {yyerrok, yyclearin, printf("erro esperado um tipo especificador ou identificador antes de abrir parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
 	| error FECHA_PARENTESES {yyerrok, yyclearin, printf("erro esperado parametros de fechar parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
+*/
 	;
 
 params:
@@ -134,7 +147,7 @@ comando:
 	;
 
 expressao_decl:
-	expressao PONTO_VIRGULA
+	expressao PONTO_VIRGULA {printf("atribuiu\n");}
 	| PONTO_VIRGULA
 	;
 
@@ -153,12 +166,12 @@ retorno_decl:
 	;
 
 expressao:
-	var ATRIBUICAO expressao
+	var ATRIBUICAO expressao {printf("atribuiu\n");}
 	| expressao_simples
 	;
 
 var:
-	IDENT
+	IDENT {printf("Ident\n");}
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE var_seq
 	;
@@ -227,6 +240,10 @@ expressao_seq:
 	;
 
 %%
+
+void teste(){
+	initArray(&a,3);
+}
 
 void yyerror(char *s) {
 	fprintf(stderr, "%s\n", s);
