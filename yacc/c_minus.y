@@ -157,6 +157,7 @@ abreEscopo:
 
 fechaEscopo:
     {
+	removeArrayEscopo(&a, escopo);
         escopo--;
     }
 ;

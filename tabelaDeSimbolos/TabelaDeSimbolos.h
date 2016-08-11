@@ -35,6 +35,8 @@ Item* buscaArrayByPosition(Array*, int);
 Item* buscaArrayYacc(Array *a, int posicao, int escopo);
 Item* buscaArrayByCadeiaEEscopo(Array *a, char* cadeia, int escopo);
 int removeArray(Array*, char*);
+void removeArrayByPosition(Array *a, int position);
+void removeArrayEscopo(Array *a, int escopo);
 void printArray(Array*);
 Item getItem(char*, int, int,char*, char*, int);
 Item getItemLex(char* cadeia, int token);

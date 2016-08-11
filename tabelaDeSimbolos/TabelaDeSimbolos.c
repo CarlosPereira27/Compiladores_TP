@@ -127,6 +127,20 @@ int removeArray(Array *a, char *cadeia) {
     return 0;
 }
 
+void removeArrayByPosition(Array *a, int position) {
+    copyItem(&a->array[position], &a->array[a->used-1]);
+    a->used--;
+}
+
+void removeArrayEscopo(Array *a, int escopo) {
+   int i;
+    for(i = 0; i < a->used; i++) {
+        if(a->array[i].escopo == escopo) {
+            removeArrayByPosition(a, i);
+        }
+    }
+}
+
 Item getItemLex(char* cadeia, int token) {
     Item item;
     strcpy(item.cadeia, cadeia);
