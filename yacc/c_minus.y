@@ -10,7 +10,13 @@ Array a;
 
 int yylex(void);
 void yyerror(char *);
-void teste();
+int escopo = 0;
+extern int colCount;
+extern int lineCount;
+Item* buscaEscopoDescendente(int posicao);
+void declaracaoAnaliseSemantica(int tipo, int var, int categoria);
+int getIndexType(int position);
+void elementoAnaliseSemantica(int var, int categoria);
 
 %}
 
@@ -28,7 +34,7 @@ void teste();
 programa:
 	declaracao_lista
 	;
-f
+
 declaracao_lista:
 	declaracao declaracao_seq {printf("Decalaracao lista\n");}
 	| declaracao {printf("Decalaracao simples\n");}
@@ -45,9 +51,21 @@ declaracao:
 	;
 
 var_declaracao:
-	tipo_especificador IDENT PONTO_VIRGULA {printf("tipo ident ;%d\n",$1);}
-	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE var_dimensao PONTO_VIRGULA
-	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE PONTO_VIRGULA
+	tipo_especificador IDENT PONTO_VIRGULA 
+        { declaracaoAnaliseSemantica($1, $2, VAR);
+       // printf("tipo ident ;%d\n",$1);
+}
+	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE 
+            var_dimensao PONTO_VIRGULA
+        { declaracaoAnaliseSemantica($1, $2, ARRAY);
+            //printf("tipo ident ;%d\n",$1);
+}
+
+	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE 
+            PONTO_VIRGULA
+        { declaracaoAnaliseSemantica($1, $2, ARRAY);
+            //printf("tipo ident ;%d\n",$1);
+}
 
 
 /*
@@ -95,6 +113,7 @@ var_declaracao_seq:
 
 fun_declaracao:
 	tipo_especificador IDENT ABRE_PARENTESES params FECHA_PARENTESES composto_decl
+	{ declaracaoAnaliseSemantica($1, $2, FUNC); }
 
 /*
 	| error ABRE_PARENTESES {yyerrok, yyclearin, printf("erro esperado um tipo especificador ou identificador antes de abrir parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
@@ -118,15 +137,29 @@ param_seq:
 
 param:
 	tipo_especificador IDENT
+	{ declaracaoAnaliseSemantica($1, $2, PARAM); }
 	| tipo_especificador IDENT ABRE_COLCHETE FECHA_COLCHETE
+	{ declaracaoAnaliseSemantica($1, $2, PARAM_ARRAY); }
 	;
 
 composto_decl:
-	ABRE_CHAVE local_declaracoes comando_lista FECHA_CHAVE
-	| ABRE_CHAVE comando_lista FECHA_CHAVE
-	| ABRE_CHAVE local_declaracoes FECHA_CHAVE
-	| ABRE_CHAVE FECHA_CHAVE
+	ABRE_CHAVE abreEscopo local_declaracoes comando_lista fechaEscopo FECHA_CHAVE
+	| ABRE_CHAVE abreEscopo comando_lista fechaEscopo FECHA_CHAVE
+	| ABRE_CHAVE abreEscopo local_declaracoes fechaEscopo FECHA_CHAVE
+	| ABRE_CHAVE abreEscopo fechaEscopo FECHA_CHAVE
 	;
+
+abreEscopo:
+    {
+        escopo++;
+    }
+;
+
+fechaEscopo:
+    {
+        escopo--;
+    }
+;
 
 local_declaracoes:
 	var_declaracao
@@ -152,7 +185,8 @@ expressao_decl:
 	;
 
 selecao_decl:
-	IF ABRE_PARENTESES expressao FECHA_PARENTESES comando			%prec THEN
+	IF ABRE_PARENTESES expressao FECHA_PARENTESES comando			
+                %prec THEN
 	| IF ABRE_PARENTESES expressao FECHA_PARENTESES comando ELSE comando
 	;
 	
@@ -171,9 +205,17 @@ expressao:
 	;
 
 var:
-	IDENT {printf("Ident\n");}
+	IDENT 
+        { $$ = $1;
+          elementoAnaliseSemantica($1, VAR); 
+         //printf("Ident\n");
+}
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE
+        {  $$ = $1;
+            elementoAnaliseSemantica($1, ARRAY); } 
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE var_seq
+        {  $$ = $1;
+            elementoAnaliseSemantica($1, ARRAY); }
 	;
 
 var_seq:
@@ -192,13 +234,13 @@ expressao_soma:
 	;
 
 soma:
-	SOMA
+	SOMA 
 	| SUBTRACAO
 	;
 
 expressao_soma_seq:
-	soma termo
-	| expressao_soma_seq soma termo
+	soma termo 
+	| expressao_soma_seq soma termo 
 	;
 
 termo:
@@ -212,21 +254,30 @@ termo_seq:
 	;
 
 mult:
-	MULT
-	| DIV
+	MULT 
+	| DIV 
 	;
 
 fator:
 	ABRE_PARENTESES expressao FECHA_PARENTESES
+        { $$ = $2; }
 	| var
+        { $$ = $1; }
 	| ativacao
-	| NUM
+        { $$ = $1; }
+	| NUM 
+        { $$ = $1; }
 	| NUM_INT
+        { $$ = $1; }
 	;
 
 ativacao:
 	IDENT ABRE_PARENTESES arg_lista FECHA_PARENTESES
+        { elementoAnaliseSemantica($1, FUNC); 
+}
 	| IDENT ABRE_PARENTESES FECHA_PARENTESES
+        { elementoAnaliseSemantica($1, FUNC); 
+ }
 	;
 
 arg_lista:
@@ -239,10 +290,93 @@ expressao_seq:
 	| expressao_seq VIRGULA expressao
 	;
 
+
 %%
 
-void teste(){
-	initArray(&a,3);
+void declaracaoAnaliseSemantica(int tipo, int posicao, int categoria) {
+    Item* item;
+    if(categoria == PARAM || categoria == PARAM_ARRAY) {
+          item = buscaArrayYacc(&a, posicao, escopo+1);
+    } else {
+	item = buscaArrayYacc(&a, posicao, escopo);
+    }
+    if(item == NULL) {
+        item = buscaArrayYacc(&a, posicao, -1);
+        Item novoItem;
+        copyItem(&novoItem, item);
+        strcpy(novoItem.tipo, buscaArrayYacc(&a, tipo, -1)->cadeia);
+	novoItem.escopo = escopo;
+	if(categoria == PARAM || categoria == PARAM_ARRAY) {
+        	novoItem.escopo++;
+	} 
+	novoItem.categoria = categoria;
+	if(categoria == PARAM) {
+        	novoItem.categoria = VAR;
+	} else if(categoria == PARAM_ARRAY) {
+		novoItem.categoria = ARRAY;
+	}
+        insertArray(&a, novoItem);
+    } else {
+	if(categoria == FUNC) {
+        	printf("Erro! L:%dC:%d.\n Função/procedimento %s já está definida neste contexto!\n\n", 
+           	 lineCount, colCount, item->cadeia);
+	} else {
+        	printf("Erro! L:%dC:%d.\n Variável %s já está definida neste contexto!\n\n", 
+           	 lineCount, colCount, item->cadeia);
+	}
+    }
+}
+
+void elementoAnaliseSemantica(int posicao, int categoria) {
+    Item* item = buscaEscopoDescendente(posicao);
+    if(item == NULL) {
+	item = buscaArrayByPosition(&a, posicao);
+	if(categoria == FUNC) {
+		printf("Erro! L:%dC:%d.\n Função/procedimento %s não está definida neste contexto!\n\n", 
+		    lineCount, colCount, item->cadeia);
+	} else {
+		printf("Erro! L:%dC:%d.\n Variável %s não está definida neste contexto!\n\n", 
+		    lineCount, colCount, item->cadeia);
+	}
+    } else if (item->categoria != categoria && categoria == ARRAY) {
+        printf("Erro! L:%dC:%d.\n Variável %s não é multidimensional!\n\n", 
+            lineCount, colCount, item->cadeia);
+    }
+}
+
+Item* buscaEscopoDescendente(int posicao) {
+    Item* item = buscaArrayByPosition(&a, posicao);
+    int i;
+    for(i = escopo; i > -1; i--) { 
+        Item* itemAux = buscaArrayByCadeiaEEscopo(&a, item->cadeia, i);
+        if(itemAux != NULL) {
+            item = itemAux;
+            break;
+        }
+    }
+    if(item->escopo == -1) {
+	return NULL;
+    }
+    return item;
+}
+
+int getIndexType(int posicao) {
+    Item* item = buscaEscopoDescendente(posicao);
+    if(item == NULL) {
+	item = buscaArrayByPosition(&a, posicao); 
+	if(item->categoria == FUNC) {
+	        printf("Erro! L:%dC:%d.\n Função/procedimento %s não está definida neste contexto!\n\n", 
+        	    lineCount, colCount, item->cadeia);
+	} else {
+        	printf("Erro! L:%dC:%d.\n Variável %s não está definida neste contexto!\n\n", 
+        	    lineCount, colCount, item->cadeia);
+	}
+        return 4;
+    } else {
+	//printArray(&a);
+        Item *i = buscaArray(&a, item->tipo);
+        return getIndiceArray(&a, i);
+    }
 }
 
 void yyerror(char *s) {
@@ -250,6 +384,8 @@ void yyerror(char *s) {
 }
 
 int main(void) {
+        initArray(&a, 50);
+        installPalavrasReservadas();
  	yyparse();
 	return 0;
 }

@@ -1,5 +1,6 @@
+#line 2 "lex.c"
 
-#line 3 "lex.yy.c"
+#line 4 "lex.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -174,8 +175,27 @@ extern FILE *yyin, *yyout;
 #define EOB_ACT_END_OF_FILE 1
 #define EOB_ACT_LAST_MATCH 2
 
-    #define YY_LESS_LINENO(n)
-    #define YY_LINENO_REWIND_TO(ptr)
+    /* Note: We specifically omit the test for yy_rule_can_match_eol because it requires
+     *       access to the local variable yy_act. Since yyless() is a macro, it would break
+     *       existing scanners that call yyless() from OUTSIDE yylex. 
+     *       One obvious solution it to make yy_act a global. I tried that, and saw
+     *       a 5% performance hit in a non-yylineno scanner, because yy_act is
+     *       normally declared as a register variable-- so it is not worth it.
+     */
+    #define  YY_LESS_LINENO(n) \
+            do { \
+                int yyl;\
+                for ( yyl = n; yyl < yyleng; ++yyl )\
+                    if ( yytext[yyl] == '\n' )\
+                        --yylineno;\
+            }while(0)
+    #define YY_LINENO_REWIND_TO(dst) \
+            do {\
+                const char *p;\
+                for ( p = yy_cp-1; p >= (dst); --p)\
+                    if ( *p == '\n' )\
+                        --yylineno;\
+            }while(0)
     
 /* Return all but the first "n" matched characters back to the input stream. */
 #define yyless(n) \
@@ -347,12 +367,12 @@ FILE *yyin = (FILE *) 0, *yyout = (FILE *) 0;
 
 typedef int yy_state_type;
 
+#define YY_FLEX_LEX_COMPAT
 extern int yylineno;
 
 int yylineno = 1;
 
-extern char *yytext;
-#define yytext_ptr yytext
+extern char yytext[];
 
 static yy_state_type yy_get_previous_state (void );
 static yy_state_type yy_try_NUL_trans (yy_state_type current_state  );
@@ -367,6 +387,9 @@ static void yy_fatal_error (yyconst char msg[]  );
 	yyleng = (size_t) (yy_cp - yy_bp); \
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
+	if ( yyleng >= YYLMAX ) \
+		YY_FATAL_ERROR( "token too large, exceeds YYLMAX" ); \
+	yy_flex_strncpy( yytext, (yytext_ptr), yyleng + 1 ); \
 	(yy_c_buf_p) = yy_cp;
 
 #define YY_NUM_RULES 39
@@ -4081,6 +4104,13 @@ static yyconst flex_int16_t yy_chk[13403] =
      1774, 1774
     } ;
 
+/* Table of booleans, true if rule could match eol. */
+static yyconst flex_int32_t yy_rule_can_match_eol[40] =
+    {   0,
+0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 
+        };
+
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
 
@@ -4094,7 +4124,12 @@ int yy_flex_debug = 0;
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-char *yytext;
+#ifndef YYLMAX
+#define YYLMAX 8192
+#endif
+
+char yytext[YYLMAX];
+char *yytext_ptr;
 #line 1 "lex/c_minus.l"
 #line 2 "lex/c_minus.l"
 /*-------------------------- Definitions --------------------------*/
@@ -4103,13 +4138,15 @@ char *yytext;
 #include <string.h>
 #include <math.h>
 #include "tabelaDeSimbolos/TabelaDeSimbolos.h"
-#include "y.tab.h"
 #include "strings/erros_lexcos.h"
+#include "yacc.h"
 
-void yyerror(char *);
-void lexerror(int lin, int col, char *ytext, char *msg);
 extern int yylval;
-#line 4113 "lex.yy.c"
+extern Array a;
+int colCount;
+int lineCount;
+
+#line 4150 "lex.c"
 
 #define INITIAL 0
 
@@ -4323,12 +4360,12 @@ YY_DECL
 		}
 
 	{
-#line 49 "lex/c_minus.l"
+#line 51 "lex/c_minus.l"
 
 
 /*----------------------------- Rules -----------------------------*/
 
-#line 4332 "lex.yy.c"
+#line 4369 "lex.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -4374,6 +4411,16 @@ yy_find_action:
 
 		YY_DO_BEFORE_ACTION;
 
+		if ( yy_act != YY_END_OF_BUFFER && yy_rule_can_match_eol[yy_act] )
+			{
+			yy_size_t yyl;
+			for ( yyl = 0; yyl < yyleng; ++yyl )
+				if ( yytext[yyl] == '\n' )
+					   
+    yylineno++;
+;
+			}
+
 do_action:	/* This label is used only to access EOF actions. */
 
 		switch ( yy_act )
@@ -4387,208 +4434,208 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 53 "lex/c_minus.l"
+#line 55 "lex/c_minus.l"
 { colCount++; } 	
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 54 "lex/c_minus.l"
+#line 56 "lex/c_minus.l"
 { colCount=1;
 			lineCount++; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 56 "lex/c_minus.l"
+#line 58 "lex/c_minus.l"
 { colCount++;
 			yylval = 17;
 			return (PONTO_VIRGULA); }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 59 "lex/c_minus.l"
+#line 61 "lex/c_minus.l"
 { colCount++;
 			yylval = 18;
 			return (VIRGULA); }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 62 "lex/c_minus.l"
+#line 64 "lex/c_minus.l"
 { colCount++;
 			yylval = 11;
 			return (ABRE_CHAVE); }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 65 "lex/c_minus.l"
+#line 67 "lex/c_minus.l"
 { colCount++;
 			yylval = 12;
 			return (FECHA_CHAVE); }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 68 "lex/c_minus.l"
+#line 70 "lex/c_minus.l"
 { colCount++;	
 			yylval = 13;
 			return (ABRE_COLCHETE); }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 71 "lex/c_minus.l"
+#line 73 "lex/c_minus.l"
 { colCount++;
 			yylval = 14;
 			return (FECHA_COLCHETE); }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 74 "lex/c_minus.l"
+#line 76 "lex/c_minus.l"
 { colCount++;
 			yylval = 15;
 			return (ABRE_PARENTESES); }      
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 77 "lex/c_minus.l"
+#line 79 "lex/c_minus.l"
 { colCount++;
 			yylval = 16;
 			return (FECHA_PARENTESES); } 
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 80 "lex/c_minus.l"
+#line 82 "lex/c_minus.l"
 { colCount++;
 			yylval = 19;
 			return (RELOP); } 
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 83 "lex/c_minus.l"
+#line 85 "lex/c_minus.l"
 { colCount+=2;
 			yylval = 20;
 			return (RELOP); } 
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 86 "lex/c_minus.l"
+#line 88 "lex/c_minus.l"
 { colCount++;
 			yylval = 23;
 			return (RELOP); } 
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 89 "lex/c_minus.l"
+#line 91 "lex/c_minus.l"
 { colCount+=2;
 			yylval = 24;
 			return (RELOP); } 
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 92 "lex/c_minus.l"
+#line 94 "lex/c_minus.l"
 { colCount+=2;
 			yylval = 21;
 			return (RELOP); } 
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 95 "lex/c_minus.l"
+#line 97 "lex/c_minus.l"
 { colCount+=2;
 			yylval = 22;
 			return (RELOP); } 
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 98 "lex/c_minus.l"
+#line 100 "lex/c_minus.l"
 { colCount+=3;
 			yylval = 0;
 			return (INT); } 
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 101 "lex/c_minus.l"
+#line 103 "lex/c_minus.l"
 { colCount+=5;
 			yylval = 1;
 			return (FLOAT); } 
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 104 "lex/c_minus.l"
+#line 106 "lex/c_minus.l"
 { colCount+=4;
 			yylval = 2;
 			return (CHAR); } 
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 107 "lex/c_minus.l"
+#line 109 "lex/c_minus.l"
 { colCount+=6;
 			yylval = 3;
 			return (STRUCT); } 
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 110 "lex/c_minus.l"
+#line 112 "lex/c_minus.l"
 { colCount+=4;
 			yylval = 4;
 			return (VOID); } 
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 113 "lex/c_minus.l"
+#line 115 "lex/c_minus.l"
 { colCount+=2;
 			yylval = 6;			
 			return (IF); } 
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 116 "lex/c_minus.l"
+#line 118 "lex/c_minus.l"
 { colCount+=4;
 			yylval = 7;
 			return (ELSE); } 
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 119 "lex/c_minus.l"
+#line 121 "lex/c_minus.l"
 { colCount++;
 			yylval = 8;
 			return (ATRIBUICAO); } 
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 122 "lex/c_minus.l"
+#line 124 "lex/c_minus.l"
 { colCount+=5;
 			yylval = 9;
 			return (WHILE); } 
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 125 "lex/c_minus.l"
+#line 127 "lex/c_minus.l"
 { colCount+=6;
 			yylval = 10;
 			return (RETURN); } 
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 128 "lex/c_minus.l"
+#line 130 "lex/c_minus.l"
 { colCount++;
 			yylval = 26;
 			return (SUBTRACAO); } 
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 131 "lex/c_minus.l"
+#line 133 "lex/c_minus.l"
 { colCount++;
 			yylval = 25;
 			return (SOMA); } 
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 134 "lex/c_minus.l"
+#line 136 "lex/c_minus.l"
 { colCount++;
 			yylval = 27;
 			return (MULT); } 
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 137 "lex/c_minus.l"
+#line 139 "lex/c_minus.l"
 { colCount++;
 			yylval = 28;
 			return (DIV); } 
@@ -4596,48 +4643,48 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 140 "lex/c_minus.l"
-{ atualizarLineEColCount(yytext); /*fprintf(yyout,"%s (COMENTARIO)\n", yytext);*/ }
+#line 142 "lex/c_minus.l"
+{ /*atualizarLineEColCount(yytext); /*fprintf(yyout,"%s (COMENTARIO)\n", yytext);*/ }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 141 "lex/c_minus.l"
-{ colCount+=strlen(yytext); 
-			yylval = install(yytext);
+#line 143 "lex/c_minus.l"
+{ colCount+=strlen(yytext);
+			yylval = insertArray(&a, getItemLex(yytext, NUM_INT));
 			return (NUM_INT); }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 144 "lex/c_minus.l"
+#line 146 "lex/c_minus.l"
 { colCount+=strlen(yytext); 
-			yylval = install(yytext); 
+			yylval = insertArray(&a, getItemLex(yytext, NUM)); 
 			return (NUM); }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 147 "lex/c_minus.l"
+#line 149 "lex/c_minus.l"
 { colCount+=strlen(yytext);
-			yylval = install(yytext);
+			yylval = insertArray(&a, getItemLex(yytext, IDENT));
 			return (IDENT);}
 	YY_BREAK
 case 35:
 /* rule 35 can match eol */
 YY_RULE_SETUP
-#line 151 "lex/c_minus.l"
+#line 153 "lex/c_minus.l"
 { colCount+=strlen(yytext);
 			fprintf(yyout, "Linha:%d; Lexical error. Input -> \"%s\".\n", lineCount, yytext); 
 			fprintf(yyout, LETRAS_CAIXA_ALTA); }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 154 "lex/c_minus.l"
+#line 156 "lex/c_minus.l"
 { colCount+=strlen(yytext);
 			fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount-(int)strlen(yytext), yytext); }
 	YY_BREAK
 case 37:
 /* rule 37 can match eol */
 YY_RULE_SETUP
-#line 156 "lex/c_minus.l"
+#line 158 "lex/c_minus.l"
 { if(yytext[strlen(yytext)-1] == '\n') { 
 				yytext[strlen(yytext)-1] = '\0';
 			} fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount, yytext);
@@ -4647,17 +4694,17 @@ YY_RULE_SETUP
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 161 "lex/c_minus.l"
+#line 163 "lex/c_minus.l"
 { fprintf(yyout, "Linha:%d; Coluna:%d; Lexical error. Input -> \"%s\".\n", lineCount, colCount, yytext);
 			colCount=1; lineCount++;
 			fprintf(yyout, LETRA_OU_SINAL_OPCIONAL); }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 165 "lex/c_minus.l"
+#line 167 "lex/c_minus.l"
 ECHO;
 	YY_BREAK
-#line 4661 "lex.yy.c"
+#line 4708 "lex.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -5019,6 +5066,10 @@ static int yy_get_next_buffer (void)
 
 	*--yy_cp = (char) c;
 
+    if ( c == '\n' ){
+        --yylineno;
+    }
+
 	(yytext_ptr) = yy_bp;
 	(yy_hold_char) = *yy_cp;
 	(yy_c_buf_p) = yy_cp;
@@ -5093,6 +5144,11 @@ static int yy_get_next_buffer (void)
 	c = *(unsigned char *) (yy_c_buf_p);	/* cast for 8-bit char's */
 	*(yy_c_buf_p) = '\0';	/* preserve yytext */
 	(yy_hold_char) = *++(yy_c_buf_p);
+
+	if ( c == '\n' )
+		   
+    yylineno++;
+;
 
 	return c;
 }
@@ -5560,6 +5616,9 @@ static int yy_init_globals (void)
      * This function is called from yylex_destroy(), so don't allocate here.
      */
 
+    /* We do not touch yylineno unless the option is enabled. */
+    yylineno =  1;
+    
     (yy_buffer_stack) = 0;
     (yy_buffer_stack_top) = 0;
     (yy_buffer_stack_max) = 0;
@@ -5652,207 +5711,41 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 164 "lex/c_minus.l"
+#line 166 "lex/c_minus.l"
 
 
 /*------------------------ User subrotines ------------------------*/
 
-void atualizarLineEColCount(char* string) {
-	int i;
-	for(i = 0; i < strlen(string); i++) {
-		colCount++;
-		if(string[i] == '\n') {
-			lineCount++;
-			colCount=1;
-		}
-	}
-}
-
-/*int installIdent(char* lexema) {
-	int i;
-	for(i = 0; i < simbolosIdentCount; i++) {
-		if(strcmp(lexema, tabelaSimbolosIdent[i]) == 0) {
-			return i;
-		}
-	}
-	strcpy(tabelaSimbolosIdent[simbolosIdentCount], lexema);
-	return simbolosIdentCount++;
-}
-
-int installNum_int(int numInt) {
-	int i;
-	for(i = 0; i < simbolosNum_intCount; i++) {
-		if(numInt == tabelaSimbolosNum_int[i]) {
-			return i;
-		}
-	}
-	tabelaSimbolosNum_int[simbolosNum_intCount] = numInt;
-	return simbolosNum_intCount++;
-}*/
 
 void installPalavrasReservadas() {
-	strcpy(tabelaSimbolos[0], "int");
-	strcpy(tabelaSimbolos[1], "float");
-	strcpy(tabelaSimbolos[2], "char");
-	strcpy(tabelaSimbolos[3], "struct");
-	strcpy(tabelaSimbolos[4], "void");
-	strcpy(tabelaSimbolos[6], "if");
-	strcpy(tabelaSimbolos[7], "else");
-	strcpy(tabelaSimbolos[8], "=");
-	strcpy(tabelaSimbolos[9], "while");
-	strcpy(tabelaSimbolos[10], "return");
-	strcpy(tabelaSimbolos[11], "{");
-	strcpy(tabelaSimbolos[12], "}");
-	strcpy(tabelaSimbolos[13], "[");
-	strcpy(tabelaSimbolos[14], "]");
-	strcpy(tabelaSimbolos[15], "(");
-	strcpy(tabelaSimbolos[16], ")");
-	strcpy(tabelaSimbolos[17], ";");
-	strcpy(tabelaSimbolos[18], ",");
-	strcpy(tabelaSimbolos[19], "<");
-	strcpy(tabelaSimbolos[20], "<=");
-	strcpy(tabelaSimbolos[21], "==");
-	strcpy(tabelaSimbolos[22], "!=");
-	strcpy(tabelaSimbolos[23], ">");
-	strcpy(tabelaSimbolos[24], ">=");
-	strcpy(tabelaSimbolos[25], "+");
-	strcpy(tabelaSimbolos[26], "-");
-	strcpy(tabelaSimbolos[27], "*");
-	strcpy(tabelaSimbolos[28], "/");
-	simbolosCount = 29;
+	insertArray(&a, getItemLex("int", INT));
+        insertArray(&a, getItemLex("float", FLOAT));
+        insertArray(&a, getItemLex("char", CHAR));
+        insertArray(&a, getItemLex("struct", STRUCT));
+        insertArray(&a, getItemLex("void", VOID));
+        insertArray(&a, getItemLex("if", IF));
+        insertArray(&a, getItemLex("else", ELSE));
+        insertArray(&a, getItemLex("=", ATRIBUICAO));
+        insertArray(&a, getItemLex("while", WHILE));
+        insertArray(&a, getItemLex("return", RETURN));
+        insertArray(&a, getItemLex("{", ABRE_CHAVE));
+        insertArray(&a, getItemLex("}", FECHA_CHAVE));
+        insertArray(&a, getItemLex("[", ABRE_COLCHETE));
+        insertArray(&a, getItemLex("]", FECHA_COLCHETE));
+        insertArray(&a, getItemLex("(", ABRE_PARENTESES));
+        insertArray(&a, getItemLex(")", FECHA_PARENTESES));
+        insertArray(&a, getItemLex(";", PONTO_VIRGULA));
+        insertArray(&a, getItemLex(",", VIRGULA));
+        insertArray(&a, getItemLex("<", LT));
+        insertArray(&a, getItemLex("<=", LE));
+        insertArray(&a, getItemLex("==", EQ));
+        insertArray(&a, getItemLex(">", GT));
+        insertArray(&a, getItemLex(">=", GE));
+        insertArray(&a, getItemLex("+", SOMA));
+        insertArray(&a, getItemLex("-",SUBTRACAO));
+        insertArray(&a, getItemLex("*", MULT));
+        insertArray(&a, getItemLex("/", DIV));
 }
-
-int install(char* token) {
-	strcpy(tabelaSimbolos[simbolosCount], token);	
-	return simbolosCount++;
-}
-
-/*
-int installNum(float num, int tamanho) {
-	int i;
-	for(i = 0; i < simbolosNumCount; i++) {
-		if(num == tabelaSimbolosNum[i]) {
-			return i;
-		}
-	}
-	tabelaSimbolosNum[simbolosNumCount] = num;
-	tabelaSimbolosNumQtdCaracteres[simbolosNumCount] = tamanho;
-	return simbolosNumCount++;
-}
-
-
-void exibirToken(int value) {
-	printf("Linha:%d; ", lineCount);
-	switch(value) {
-	case INT: printf("Coluna:%d; Lexema:int; Token:INT\n", colCount-3); break;
-	case FLOAT: printf("Coluna:%d; Lexema:float; Token:FLOAT\n", colCount-5); break;
-	case CHAR: printf("Coluna:%d; Lexema:char; Token:CHAR\n", colCount-4); break;
-	case STRUCT: printf("Coluna:%d; Lexema:struct; Token:STRUCT\n", colCount-6); break;
-	case VOID: printf("Coluna:%d; Lexema:void; Token:VOID\n", colCount-4); break;
-	case IF: printf("Coluna:%d; Lexema:if; Token:IF\n", colCount-2); break;
-	case ELSE: printf("Coluna:%d; Lexema:else; Token:ELSE\n", colCount-4); break;
-	case ATRIBUICAO: printf("Coluna:%d; Lexema:=; Token:ATRIBUICAO\n", colCount-1); break;
-	case WHILE: printf("Coluna:%d; Lexema:while; Token:WHILE\n", colCount-5); break;
-	case RETURN: printf("Coluna:%d; Lexema:return; Token:RETURN\n", colCount-6); break;
-	case ABRE_CHAVE: printf("Coluna:%d; Lexema:{; Token:ABRE_CHAVE\n", colCount-1); break;
-	case FECHA_CHAVE: printf("Coluna:%d; Lexema:}; Token:FECHA_CHAVE\n", colCount-1); break;
-	case ABRE_COLCHETE: printf("Coluna:%d; Lexema:[; Token:ABRE_COLCHETE\n", colCount-1); break;
-	case FECHA_COLCHETE: printf("Coluna:%d; Lexema:]; Token:FECHA_COLCHETE\n", colCount-1); break;
-	case ABRE_PARENTESES: printf("Coluna:%d; Lexema:(; Token:ABRE_PARENTESES\n", colCount-1); break;
-	case FECHA_PARENTESES: printf("Coluna:%d; Lexema:); Token:FECHA_PARENTESES\n", colCount-1); break;
-	case PONTO_VIRGULA: printf("Coluna:%d; Lexema:;; Token:PONTO_VIRGULA\n", colCount-1); break;
-	case VIRGULA: printf("Coluna:%d; Lexema:,; Token:VIRGULA\n", colCount-1); break;
-	case RELOP: 
-		switch(yylval) {
-		case LT: printf("Coluna:%d; Lexema:<; Token:RELOP->LT\n", colCount-1); break;
-		case LE: printf("Coluna:%d; Lexema:<=; Token:RELOP->LE\n", colCount-2); break;
-		case EQ: printf("Coluna:%d; Lexema:==; Token:RELOP->EQ\n", colCount-2); break;
-		case NE: printf("Coluna:%d; Lexema:!=; Token:RELOP->NE\n", colCount-2); break;
-		case GT: printf("Coluna:%d; Lexema:>; Token:RELOP->GT\n", colCount-1); break;
-		case GE: printf("Coluna:%d; Lexema:>=; Token:RELOP->GE\n", colCount-2); break;
-		}; break;
-	case SOMA: printf("Coluna:%d; Lexema:+; Token:SOMA\n", colCount-1); break;
-	case SUBTRACAO: printf("Coluna:%d; Lexema:-; Token:SUBTRACAO\n", colCount-1); break;
-	case MULT: printf("Coluna:%d; Lexema:*; Token:MULT\n", colCount-1); break;
-	case DIV: printf("Coluna:%d; Lexema:/; Token:DIV\n", colCount-1); break;
-	case NUM_INT: printf("Coluna:%d; Lexema:%d; Token:<NUM_INT,ID%d>\n", colCount-((int)log10(tabelaSimbolosNum_int[yylval]))-1, tabelaSimbolosNum_int[yylval], yylval); break;
-	case NUM: printf("Coluna:%d; Lexema:%f; Token:<NUM,ID%d>\n", colCount-tabelaSimbolosNumQtdCaracteres[yylval], tabelaSimbolosNum[yylval], yylval); break;
-	case IDENT: printf("Coluna:%d; Lexema:%s; Token:<IDENT,ID%d>\n", colCount-(int)strlen(tabelaSimbolosIdent[yylval]), tabelaSimbolosIdent[yylval], yylval); break;
-	}
-}*/
-
-int getLineCount() {
-	return lineCount;
-}
-
-int getColCount() {
-	return colCount;
-}
-
-int getTamanhoLexicoDoToken(int posicaoTabelaDeSimbolos) {
-	return strlen(tabelaSimbolos[posicaoTabelaDeSimbolos]);
-}
-
-char* getValorLexicoDoToken(int posicaoTabelaDeSimbolos) {
-	return tabelaSimbolos[posicaoTabelaDeSimbolos];
-}
-
-void setEntrada(char* arquivo) {
-	yyin = fopen(arquivo, "r");
-    	yyout=stdout;
-}
-
-/*int getTamanhoToken(int token) {
-	printf("%d\n", token);
-	switch(token) {
-	case INT: return 3;
-	case FLOAT: return 5;
-	case CHAR: return 4;
-	case STRUCT: return 6;
-	case VOID: printf("Coluna:%d; Lexema:void; Token:VOID\n", colCount-4); break;
-	case IF: printf("Coluna:%d; Lexema:if; Token:IF\n", colCount-2); break;
-	case ELSE: printf("Coluna:%d; Lexema:else; Token:ELSE\n", colCount-4); break;
-	case ATRIBUICAO: printf("Coluna:%d; Lexema:=; Token:ATRIBUICAO\n", colCount-1); break;
-	case WHILE: printf("Coluna:%d; Lexema:while; Token:WHILE\n", colCount-5); break;
-	case RETURN: printf("Coluna:%d; Lexema:return; Token:RETURN\n", colCount-6); break;
-	case ABRE_CHAVE: printf("Coluna:%d; Lexema:{; Token:ABRE_CHAVE\n", colCount-1); break;
-	case FECHA_CHAVE: printf("Coluna:%d; Lexema:}; Token:FECHA_CHAVE\n", colCount-1); break;
-	case ABRE_COLCHETE: printf("Coluna:%d; Lexema:[; Token:ABRE_COLCHETE\n", colCount-1); break;
-	case FECHA_COLCHETE: printf("Coluna:%d; Lexema:]; Token:FECHA_COLCHETE\n", colCount-1); break;
-	case ABRE_PARENTESES: printf("Coluna:%d; Lexema:(; Token:ABRE_PARENTESES\n", colCount-1); break;
-	case FECHA_PARENTESES: printf("Coluna:%d; Lexema:); Token:FECHA_PARENTESES\n", colCount-1); break;
-	case PONTO_VIRGULA: printf("Coluna:%d; Lexema:;; Token:PONTO_VIRGULA\n", colCount-1); break;
-	case VIRGULA: printf("Coluna:%d; Lexema:,; Token:VIRGULA\n", colCount-1); break;
-	case RELOP: 
-		switch(yylval) {
-		case LT: printf("Coluna:%d; Lexema:<; Token:RELOP->LT\n", colCount-1); break;
-		case LE: printf("Coluna:%d; Lexema:<=; Token:RELOP->LE\n", colCount-2); break;
-		case EQ: printf("Coluna:%d; Lexema:==; Token:RELOP->EQ\n", colCount-2); break;
-		case NE: printf("Coluna:%d; Lexema:!=; Token:RELOP->NE\n", colCount-2); break;
-		case GT: printf("Coluna:%d; Lexema:>; Token:RELOP->GT\n", colCount-1); break;
-		case GE: printf("Coluna:%d; Lexema:>=; Token:RELOP->GE\n", colCount-2); break;
-		}; break;
-	case SOMA: printf("Coluna:%d; Lexema:+; Token:SOMA\n", colCount-1); break;
-	case SUBTRACAO: printf("Coluna:%d; Lexema:-; Token:SUBTRACAO\n", colCount-1); break;
-	case MULT: printf("Coluna:%d; Lexema:*; Token:MULT\n", colCount-1); break;
-	case DIV: printf("Coluna:%d; Lexema:/; Token:DIV\n", colCount-1); break;
-	case NUM_INT: printf("Coluna:%d; Lexema:%d; Token:<NUM_INT,ID%d>\n", colCount-((int)log10(tabelaSimbolosNum_int[yylval]))-1, tabelaSimbolosNum_int[yylval], yylval); break;
-	case NUM: printf("Coluna:%d; Lexema:%f; Token:<NUM,ID%d>\n", colCount-tabelaSimbolosNumQtdCaracteres[yylval], tabelaSimbolosNum[yylval], yylval); break;
-	case IDENT: printf("Coluna:%d; Lexema:%s; Token:<IDENT,ID%d>\n", colCount-(int)strlen(tabelaSimbolosIdent[yylval]), tabelaSimbolosIdent[yylval], yylval); break;
-	default: return -1;
-	}
-	return -1;
-}
-
-int main(int argc, char *argv[]){
-   	yyin = fopen(argv[1], "r");
-    	yyout=stdout;
-	while(1) {
-		exibirToken(yylex());
-		getchar();
-	}
-    	return 0;
-}*/
 
 int yywrap(){
     	return 0;

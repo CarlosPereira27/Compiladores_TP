@@ -9,6 +9,7 @@
 #include "yacc.h"
 
 extern int yylval;
+extern Array a;
 int colCount;
 int lineCount;
 
@@ -140,16 +141,13 @@ return			{ colCount+=6;
 			return (DIV); } 
 {comentario}		{ /*atualizarLineEColCount(yytext); /*fprintf(yyout,"%s (COMENTARIO)\n", yytext);*/ }
 {num-int}		{ colCount+=strlen(yytext);
-			yylval = 29; 
-			//yylval = install(yytext);
+			yylval = insertArray(&a, getItemLex(yytext, NUM_INT));
 			return (NUM_INT); }
 {num}			{ colCount+=strlen(yytext); 
-			yylval = 30; 
-			///yylval = install(yytext); 
+			yylval = insertArray(&a, getItemLex(yytext, NUM)); 
 			return (NUM); }
 {ident}			{ colCount+=strlen(yytext);
-			yylval = 31; 
-			//yylval = install(yytext);
+			yylval = insertArray(&a, getItemLex(yytext, IDENT));
 			return (IDENT);}
 
 {erroLetraMaiuscula}	{ colCount+=strlen(yytext);
@@ -168,6 +166,37 @@ return			{ colCount+=6;
 
 %%
 /*------------------------ User subrotines ------------------------*/
+
+
+void installPalavrasReservadas() {
+	insertArray(&a, getItemLex("int", INT));
+        insertArray(&a, getItemLex("float", FLOAT));
+        insertArray(&a, getItemLex("char", CHAR));
+        insertArray(&a, getItemLex("struct", STRUCT));
+        insertArray(&a, getItemLex("void", VOID));
+        insertArray(&a, getItemLex("if", IF));
+        insertArray(&a, getItemLex("else", ELSE));
+        insertArray(&a, getItemLex("=", ATRIBUICAO));
+        insertArray(&a, getItemLex("while", WHILE));
+        insertArray(&a, getItemLex("return", RETURN));
+        insertArray(&a, getItemLex("{", ABRE_CHAVE));
+        insertArray(&a, getItemLex("}", FECHA_CHAVE));
+        insertArray(&a, getItemLex("[", ABRE_COLCHETE));
+        insertArray(&a, getItemLex("]", FECHA_COLCHETE));
+        insertArray(&a, getItemLex("(", ABRE_PARENTESES));
+        insertArray(&a, getItemLex(")", FECHA_PARENTESES));
+        insertArray(&a, getItemLex(";", PONTO_VIRGULA));
+        insertArray(&a, getItemLex(",", VIRGULA));
+        insertArray(&a, getItemLex("<", LT));
+        insertArray(&a, getItemLex("<=", LE));
+        insertArray(&a, getItemLex("==", EQ));
+        insertArray(&a, getItemLex(">", GT));
+        insertArray(&a, getItemLex(">=", GE));
+        insertArray(&a, getItemLex("+", SOMA));
+        insertArray(&a, getItemLex("-",SUBTRACAO));
+        insertArray(&a, getItemLex("*", MULT));
+        insertArray(&a, getItemLex("/", DIV));
+}
 
 int yywrap(){
     	return 0;

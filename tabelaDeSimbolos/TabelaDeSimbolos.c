@@ -4,8 +4,8 @@
 void printArray(Array *a) {
     int i;
     for (i = 0; i < a->used; i++) {
-        printf("Cadeia:%s; Valor:%s\n", 
-                a->array[i].cadeia, a->array[i].valor);
+        printf("Cadeia:%s; Tipo:%s; Escopo:%d\n", 
+                a->array[i].cadeia, a->array[i].tipo, a->array[i].escopo);
     }
 }
 
@@ -25,16 +25,73 @@ Item* buscaArray(Array *a, char *cadeia) {
     return NULL;
 }
 
+Item* buscaArrayByPosition(Array *a, int posicao) {
+    return &a->array[posicao];
+}
+
+Item* buscaArrayByCadeiaEEscopo(Array *a, char* cadeia, int escopo) {
+    int i;
+    for(i = 0; i < a->used; i++) {
+        if(strcmp(a->array[i].cadeia, cadeia) == 0 && 
+                a->array[i].escopo == escopo) {
+            return &a->array[i];
+        }
+    }
+    return NULL;
+}
+
+Item* buscaArrayYacc(Array *a, int posicao, int escopo) {
+    Item* item = &a->array[posicao];
+    if(item->escopo == escopo) {
+        return item;
+    } else {
+        return buscaArrayByCadeiaEEscopo(a, item->cadeia, escopo);
+    }
+}
+
+int getIndiceArray(Array *a, Item* item) {
+    int i;
+    for(i = 0; i < a->used; i++) {
+        if(equalsItem(&a->array[i], item) == 1) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int equalsItem(Item* item1, Item* item2) {
+    if(strcmp(item1->cadeia, item2->cadeia) != 0) {
+        return 0;
+    }
+    /*if(strcmp(item1->tipo, item2->tipo) != 0) {
+        return 0;
+    }
+    if(strcmp(item1->valor, item2->valor) != 0) {
+        return 0;
+    }
+    if(item1->token != item2->token) {
+        return 0;
+    }
+    if(item1->categoria != item2->categoria) {
+        return 0;
+    }//*/
+    if(item1->escopo != item2->escopo) {
+        return 0;
+    }
+    return 1;
+}
+
 int insertArray(Array *a, Item element) {
   if (a->used == a->size) {
     a->size *= 2;
     a->array = (Item *)realloc(a->array, a->size * sizeof(Item));
   }
-  if(buscaArray(a, element.cadeia) == NULL) {
-    a->array[a->used++] = element;
-    return 1;
-  }
-  return 0;
+  int indiceItem = getIndiceArray(a, &element);
+  if(indiceItem == -1) {
+    a->array[a->used] = element;
+    return a->used++;
+  } 
+  return indiceItem;
 }
 
 void freeArray(Array *a) {
@@ -47,20 +104,15 @@ void freeArray(Array *a) {
 
 void copyItem(Item *itemDest, Item *itemSrc) {
     if(itemSrc->cadeia != NULL) {
-        printf("OK%s-%s\n", itemDest->cadeia, itemSrc->cadeia);
         strcpy(itemDest->cadeia, itemSrc->cadeia);
-        printf("OK\n");
     }
     itemDest->token = itemSrc->token;
     itemDest->categoria = itemSrc->categoria;
-    printf("OK\n");
     if(itemSrc->tipo != NULL) {
         strcpy(itemDest->tipo, itemSrc->tipo);
-        printf("OK\n");
     }
     if(itemSrc->valor != NULL) {
         strcpy(itemDest->valor, itemSrc->valor);
-        printf("OK\n");
     }
     itemDest->escopo = itemSrc->escopo;
 }
@@ -75,8 +127,18 @@ int removeArray(Array *a, char *cadeia) {
     return 0;
 }
 
+Item getItemLex(char* cadeia, int token) {
+    Item item;
+    strcpy(item.cadeia, cadeia);
+    item.token = token;
+    item.escopo = -1;
+    strcpy(item.tipo, "");
+    strcpy(item.valor, "");
+    return item;
+}
+
 Item getItem(char* cadeia, int token, int categoria,
-        char* tipo, char* valor, int escopo) {
+    char* tipo, char* valor, int escopo) {
     Item item;
     strcpy(item.cadeia, cadeia);
     item.token = token;

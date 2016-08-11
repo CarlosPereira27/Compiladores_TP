@@ -9,7 +9,7 @@
 #define SIZE_SIMBOL 200
 #define SIZE_TABLE 4000
 
-enum CATEGORIA{ VAR, FUNC };
+enum CATEGORIA{ VAR, ARRAY, FUNC, PARAM, PARAM_ARRAY };
 
 typedef struct {
   char cadeia[SIZE_SIMBOL];
@@ -26,20 +26,20 @@ typedef struct {
   size_t size;
 } Array;
 
-typedef struct No {
-  Array array;
-  struct No *prox;  
-} Pilha;
-
 
 void initArray(Array*, size_t);
-int insertArray(Array*, Item);
 void freeArray(Array*);
-void insertArrayItem(Array*, Item);
+int insertArray(Array*, Item);
 Item* buscaArray(Array*, char*);
+Item* buscaArrayByPosition(Array*, int);
+Item* buscaArrayYacc(Array *a, int posicao, int escopo);
+Item* buscaArrayByCadeiaEEscopo(Array *a, char* cadeia, int escopo);
 int removeArray(Array*, char*);
 void printArray(Array*);
 Item getItem(char*, int, int,char*, char*, int);
+Item getItemLex(char* cadeia, int token);
+int equalsItem(Item* item1, Item* item2);
+int getIndiceArray(Array *a, Item* item);
 
 
 #endif /*_TABELA_DE_SIMBOLOS_*/
