@@ -38,8 +38,9 @@ int removeArray(Array*, char*);
 void removeArrayByPosition(Array *a, int position);
 void removeArrayEscopo(Array *a, int escopo);
 void printArray(Array*);
-Item getItem(char*, int, int,char*, char*, int);
+Item getItem(char*, int, int, char*, char*, int);
 Item getItemLex(char* cadeia, int token);
+Item getItemEscopo(char* cadeia, int escopo, char* tipo);
 int equalsItem(Item* item1, Item* item2);
 int getIndiceArray(Array *a, Item* item);
 

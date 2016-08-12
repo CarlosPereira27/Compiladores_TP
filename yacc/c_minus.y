@@ -11,12 +11,26 @@ Array a;
 int yylex(void);
 void yyerror(char *);
 int escopo = 0;
+const char* t = "_t";
+unsigned long contT = 0;
+
+extern FILE * yyin;
+extern FILE * yyout;
+
 extern int colCount;
 extern int lineCount;
 Item* buscaEscopoDescendente(int posicao);
 void declaracaoAnaliseSemantica(int tipo, int var, int categoria);
 int getIndexType(int position);
 void elementoAnaliseSemantica(int var, int categoria);
+char* getTemp();
+char* getOp(int num);
+char* getOpTermo(int num, int position);
+void verificacaoDeTipoAtribuicao(int posicao1, int posicao2);
+void verificacaoDeTipoOperacao(int posicao1, int posicao2);
+char* getTipoOperacao(int posicao1, int posicao2);
+
+
 
 %}
 
@@ -36,36 +50,44 @@ programa:
 	;
 
 declaracao_lista:
-	declaracao declaracao_seq {printf("Decalaracao lista\n");}
-	| declaracao {printf("Decalaracao simples\n");}
+	declaracao declaracao_seq
+	| declaracao
 	;
 
 declaracao_seq:
 	declaracao
+	{
+		fflush(yyout);
+		//printArray(&a);
+	}
 	| declaracao_seq declaracao
+	{
+		fflush(yyout);
+		//printArray(&a);
+	}
 	;
 
 declaracao:
-	var_declaracao {printf("var declaracao\n");}
-	| fun_declaracao {printf("fun declaracao\n");}
+	var_declaracao
+	| fun_declaracao
 	;
 
 var_declaracao:
 	tipo_especificador IDENT PONTO_VIRGULA 
-        { declaracaoAnaliseSemantica($1, $2, VAR);
-       // printf("tipo ident ;%d\n",$1);
-}
+    { 
+    	declaracaoAnaliseSemantica($1, $2, VAR);
+	}
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE 
             var_dimensao PONTO_VIRGULA
-        { declaracaoAnaliseSemantica($1, $2, ARRAY);
-            //printf("tipo ident ;%d\n",$1);
-}
+    { 
+    	declaracaoAnaliseSemantica($1, $2, ARRAY);
+	}
 
 	| tipo_especificador IDENT ABRE_COLCHETE NUM_INT FECHA_COLCHETE 
             PONTO_VIRGULA
-        { declaracaoAnaliseSemantica($1, $2, ARRAY);
-            //printf("tipo ident ;%d\n",$1);
-}
+    { 
+    	declaracaoAnaliseSemantica($1, $2, ARRAY);
+	}
 
 
 /*
@@ -87,11 +109,26 @@ var_dimensao:
 	;
 
 tipo_especificador:
-	INT {$$ = $1;}
-	| FLOAT {$$ = $1;}
-	| CHAR	{$$ = $1;}
-	| VOID	{$$ = $1;}
-	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE {$$ = $2;}
+	INT 
+	{
+		$$ = $1;
+	}
+	| FLOAT 
+	{
+		$$ = $1;
+	}
+	| CHAR	
+	{
+		$$ = $1;
+	}
+	| VOID	
+	{
+		$$ = $1;
+	}
+	| STRUCT IDENT ABRE_CHAVE atributos_declaracao FECHA_CHAVE 
+	{
+		$$ = $2;
+	}
 
 /*
 	| STRUCT error ABRE_CHAVE {yyerrok, yyclearin, printf("erro esperado um ident antes de abrir chaves : %s, %d, %d\n", getValorLexicoDoToken($2), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
@@ -113,7 +150,9 @@ var_declaracao_seq:
 
 fun_declaracao:
 	tipo_especificador IDENT ABRE_PARENTESES params FECHA_PARENTESES composto_decl
-	{ declaracaoAnaliseSemantica($1, $2, FUNC); }
+	{ 
+		declaracaoAnaliseSemantica($1, $2, FUNC); 
+	}
 
 /*
 	| error ABRE_PARENTESES {yyerrok, yyclearin, printf("erro esperado um tipo especificador ou identificador antes de abrir parenteses : %s, %d, %d\n", getValorLexicoDoToken($1), getLineCount() , getColCount()-getTamanhoLexicoDoToken($1));}
@@ -137,9 +176,13 @@ param_seq:
 
 param:
 	tipo_especificador IDENT
-	{ declaracaoAnaliseSemantica($1, $2, PARAM); }
+	{ 
+		declaracaoAnaliseSemantica($1, $2, PARAM); 
+	}
 	| tipo_especificador IDENT ABRE_COLCHETE FECHA_COLCHETE
-	{ declaracaoAnaliseSemantica($1, $2, PARAM_ARRAY); }
+	{ 
+		declaracaoAnaliseSemantica($1, $2, PARAM_ARRAY); 
+	}
 	;
 
 composto_decl:
@@ -157,7 +200,7 @@ abreEscopo:
 
 fechaEscopo:
     {
-	removeArrayEscopo(&a, escopo);
+		removeArrayEscopo(&a, escopo);
         escopo--;
     }
 ;
@@ -181,7 +224,8 @@ comando:
 	;
 
 expressao_decl:
-	expressao PONTO_VIRGULA {printf("atribuiu\n");}
+	expressao PONTO_VIRGULA 
+	{}
 	| PONTO_VIRGULA
 	;
 
@@ -197,26 +241,43 @@ iteracao_decl:
 
 retorno_decl:
 	RETURN PONTO_VIRGULA
+	{
+		fprintf(yyout, "return\n");
+	}
 	| RETURN expressao PONTO_VIRGULA
+	{
+		fprintf(yyout, "return %s\n", buscaArrayByPosition(&a, $2)->cadeia);
+	}
 	;
 
 expressao:
-	var ATRIBUICAO expressao {printf("atribuiu\n");}
+	var ATRIBUICAO expressao 
+	{
+		fprintf(yyout, "%s = %s\n", buscaArrayByPosition(&a, $1)->cadeia, 
+			buscaArrayByPosition(&a, $3)->cadeia);
+		verificacaoDeTipoAtribuicao($1, $3);
+		$$ = $1;
+	}
 	| expressao_simples
+	{
+		$$ = $1;
+	}
 	;
 
 var:
 	IDENT 
-        { $$ = $1;
-          elementoAnaliseSemantica($1, VAR); 
-         //printf("Ident\n");
-}
+    { $$ = $1;
+        elementoAnaliseSemantica($1, VAR); 
+	}
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE
-        {  $$ = $1;
-            elementoAnaliseSemantica($1, ARRAY); } 
+    {  $$ = $1;
+        elementoAnaliseSemantica($1, ARRAY); 
+    } 
 	| IDENT ABRE_COLCHETE expressao FECHA_COLCHETE var_seq
-        {  $$ = $1;
-            elementoAnaliseSemantica($1, ARRAY); }
+    {  
+    	$$ = $1;
+        elementoAnaliseSemantica($1, ARRAY); 
+    }
 	;
 
 var_seq:
@@ -226,59 +287,160 @@ var_seq:
 
 expressao_simples:
 	expressao_soma RELOP expressao_soma
+	{
+		char* temp = getTemp();
+		fprintf(yyout, "%s%s = %s %s %s\n", t, temp, 
+			buscaArrayByPosition(&a, $1)->cadeia, buscaArrayByPosition(&a, $2)->cadeia
+			, buscaArrayByPosition(&a, $3)->cadeia);
+		char strCadeia[200];
+		strcpy(strCadeia, t);
+		strcat(strCadeia, temp);
+		verificacaoDeTipoOperacao($1, $3);
+		$$ = insertArray(&a, getItemEscopo(strCadeia, escopo, getTipoOperacao($1, $3)));
+	}
 	| expressao_soma
+	{
+		$$ = $1;
+	}
 	;
 
 expressao_soma:
 	termo
+	{
+		$$ = $1; 
+	}
 	| termo expressao_soma_seq
+	{
+		char* temp = getTemp();
+		fprintf(yyout, "%s%s = %s%s\n", t, temp, 
+			buscaArrayByPosition(&a, $1)->cadeia, buscaArrayByPosition(&a, $2)->cadeia);
+		char strCadeia[200];
+		strcpy(strCadeia, t);
+		strcat(strCadeia, temp);
+		verificacaoDeTipoOperacao($1, $2);
+		$$ = insertArray(&a, getItemEscopo(strCadeia, escopo, getTipoOperacao($1, $2)));
+	}
 	;
 
 soma:
 	SOMA 
+	{ $$ = $1; }
 	| SUBTRACAO
+	{ $$ = $1; }
 	;
 
 expressao_soma_seq:
 	soma termo 
+	{
+		$$ = insertArray(&a, getItemEscopo(getOpTermo($1, $2), escopo, 
+			buscaArrayByPosition(&a, $1)->tipo));
+	}
 	| expressao_soma_seq soma termo 
+	{
+		int i;
+		char* temp = getTemp();
+		char* str = buscaArrayByPosition(&a, $1)->cadeia;
+		fprintf(yyout, "%s%s = ", t, temp);
+		for(i = 1; i < strlen(str); i++) {
+			fprintf(yyout, "%c", str[i]);
+		}
+		fprintf(yyout, "%s\n", getOpTermo($2, $3));
+		char strCadeia[200];
+		strCadeia[0] = str[0];
+		strCadeia[1] = '\0';
+		strcat(strCadeia, t);
+		strcat(strCadeia, temp);
+		verificacaoDeTipoOperacao($1, $3);
+		$$ = insertArray(&a, getItemEscopo(strCadeia, escopo, getTipoOperacao($1, $3)));
+	}
 	;
 
 termo:
 	fator 
+	{
+		$$ = $1; 
+	}
 	| fator termo_seq
+	{
+		char* temp = getTemp();
+		fprintf(yyout, "%s%s = %s%s\n", t, temp, 
+			buscaArrayByPosition(&a, $1)->cadeia, buscaArrayByPosition(&a, $2)->cadeia);
+		char strCadeia[200];
+		strcpy(strCadeia, t);
+		strcat(strCadeia, temp);
+		verificacaoDeTipoOperacao($1, $2);
+		$$ = insertArray(&a, getItemEscopo(strCadeia, escopo, getTipoOperacao($1, $2)));
+	}
 	;
 
 termo_seq:
-	mult fator
-	| termo_seq mult fator
+	mult fator 
+	{
+
+		$$ = insertArray(&a, getItemEscopo(getOpTermo($1, $2), escopo, 
+			buscaArrayByPosition(&a, $1)->tipo)); 
+	}
+	| termo_seq mult fator 
+	{ 	
+		int i;
+		char* temp = getTemp();
+		char* str = buscaArrayByPosition(&a, $1)->cadeia;
+		fprintf(yyout, "%s%s = ", t, temp);
+		for(i = 1; i < strlen(str); i++) {
+			fprintf(yyout, "%c", str[i]);
+		}
+		fprintf(yyout, "%s\n", getOpTermo($2, $3));
+		char strCadeia[200];
+		strCadeia[0] = str[0];
+		strCadeia[1] = '\0';
+		strcat(strCadeia, t);
+		strcat(strCadeia, temp);
+		verificacaoDeTipoOperacao($1, $3);
+		$$ = insertArray(&a, getItemEscopo(strCadeia, escopo, getTipoOperacao($1, $3)));
+	}
 	;
 
 mult:
 	MULT 
+	{ $$ = $1; }
 	| DIV 
+	{ $$ = $1; }
 	;
 
 fator:
 	ABRE_PARENTESES expressao FECHA_PARENTESES
-        { $$ = $2; }
+    { 
+    	$$ = $2; 
+    }
 	| var
-        { $$ = $1; }
+    { 
+    	$$ = $1;
+	}
 	| ativacao
-        { $$ = $1; }
+    { 
+    	$$ = $1; 
+    }
 	| NUM 
-        { $$ = $1; }
+    { 
+    	$$ = $1; 
+    }
 	| NUM_INT
-        { $$ = $1; }
+    { 
+    	$$ = $1;
+	}
 	;
 
 ativacao:
 	IDENT ABRE_PARENTESES arg_lista FECHA_PARENTESES
-        { elementoAnaliseSemantica($1, FUNC); 
-}
+	{ 
+		$$ = $1; 
+     	elementoAnaliseSemantica($1, FUNC); 
+    }
 	| IDENT ABRE_PARENTESES FECHA_PARENTESES
-        { elementoAnaliseSemantica($1, FUNC); 
- }
+    { 
+    	$$ = $1;
+       	elementoAnaliseSemantica($1, FUNC); 
+    }
 	;
 
 arg_lista:
@@ -294,19 +456,118 @@ expressao_seq:
 
 %%
 
+char* getTipoOperacao(int posicao1, int posicao2) {
+	// Item* item1 = buscaArrayByPosition(&a, posicao1);
+	// // item1 = buscaArrayByCadeiaEEscopo(&a, item1->cadeia, escopo);
+	// Item* item2 = buscaArrayByPosition(&a, posicao2);
+	// // item2 = buscaArrayByCadeiaEEscopo(&a, item2->cadeia, escopo);
+	// if(strcmp(item1->tipo, "float") == 0 || 
+	// 	strcmp(item2->tipo, "float") == 0) {
+	// 	return "float";
+	// }
+	// if(strcmp(item1->tipo, "int") == 0 || 
+	// 	strcmp(item2->tipo, "int") == 0) {
+	// 	return "int";
+	// }
+	// if(strcmp(item1->tipo, "char") == 0 || 
+	// 	strcmp(item2->tipo, "char") == 0) {
+	// 	return "char";
+	// }
+	return "void";
+}
+
+void verificacaoDeTipoAtribuicao(int posicao1, int posicao2) {
+	// Item* item1 = buscaArrayByPosition(&a, posicao1);
+	// // item1 = buscaArrayByCadeiaEEscopo(&a, item1->cadeia, escopo);
+	// Item* item2 = buscaArrayByPosition(&a, posicao2);
+	// // item2 = buscaArrayByCadeiaEEscopo(&a, item2->cadeia, escopo);
+	// if(strcmp(item1->tipo, item2->tipo) != 0) {
+	// 	if(strcmp(item1->tipo, "char") == 0 || 
+	// 		strcmp(item1->tipo, "float") == 0 || 
+	// 		strcmp(item1->tipo, "int") == 0) {
+	// 	} else {
+	// 		printf("Erro: Os tipos das variáveis: %s, %s são imcompatíveis (%s, %s)!\n", 
+	// 			item1->cadeia, item2->cadeia, item1->tipo, item2->tipo);
+	// 		return;
+	// 	}
+	// 	if(strcmp(item2->tipo, "char") == 0 || 
+	// 		strcmp(item2->tipo, "float") == 0 || 
+	// 		strcmp(item2->tipo, "int") == 0) {
+	// 	} else {
+	// 		printf("Erro: Os tipos das variáveis: %s, %s são imcompatíveis (%s, %s)!\n", 
+	// 			item1->cadeia, item2->cadeia, item1->tipo, item2->tipo);
+	// 	}
+	// }
+}
+
+void verificacaoDeTipoOperacao(int posicao1, int posicao2) {
+	// Item* item1 = buscaArrayByPosition(&a, posicao1);
+	// // item1 = buscaArrayByCadeiaEEscopo(&a, item1->cadeia, escopo);
+	// Item* item2 = buscaArrayByPosition(&a, posicao2);
+	// // item2 = buscaArrayByCadeiaEEscopo(&a, item2->cadeia, escopo);
+	// if(strcmp(item1->tipo, item2->tipo) != 0) {
+	// 	if(strcmp(item1->tipo, "char") == 0 || 
+	// 		strcmp(item1->tipo, "float") == 0 || 
+	// 		strcmp(item1->tipo, "int") == 0) {
+	// 	} else {
+	// 		printf("Erro: Os tipos das variáveis: %s, %s são imcompatíveis (%s, %s)!\n", 
+	// 			item1->cadeia, item2->cadeia, item1->tipo, item2->tipo);
+	// 		return;
+	// 	}
+	// 	if(strcmp(item2->tipo, "char") == 0 || 
+	// 		strcmp(item2->tipo, "float") == 0 || 
+	// 		strcmp(item2->tipo, "int") == 0) {
+	// 	} else {
+	// 		printf("Erro: Os tipos das variáveis: %s, %s são imcompatíveis (%s, %s)!\n", 
+	// 			item1->cadeia, item2->cadeia, item1->tipo, item2->tipo);
+	// 	}
+	// } else {
+	// 	if(strcmp(item1->tipo, "char") == 0 || 
+	// 		strcmp(item1->tipo, "float") == 0 || 
+	// 		strcmp(item1->tipo, "int") == 0) {
+	// 	} else {
+	// 		printf("O tipo das variáveis: %s, %s não estão definidos para esta operação (%s)!\n", 
+	// 			item1->cadeia, item2->cadeia, item1->tipo);
+	// 	}
+	// }
+}
+
+char* getOpTermo(int num, int position) {
+	char* str = malloc( sizeof(char) * 200 );
+	strcpy(str, getOp(num));
+	strcat(str, buscaArrayByPosition(&a, position)->cadeia);
+	return str;
+}
+
+char* getOp(int num) {
+	switch(num) {
+		case 24: return " + ";
+		case 25: return " - ";
+		case 26: return " * ";
+		case 27: return " / ";
+	}
+	return 0;
+}
+
+char* getTemp() {
+	char* str = malloc( sizeof(char) * 100 );
+	sprintf(str, "%lu", contT++);
+	return str;
+}
+
 void declaracaoAnaliseSemantica(int tipo, int posicao, int categoria) {
     Item* item;
     if(categoria == PARAM || categoria == PARAM_ARRAY) {
-          item = buscaArrayYacc(&a, posicao, escopo+1);
+        item = buscaArrayYacc(&a, posicao, escopo+1);
     } else {
-	item = buscaArrayYacc(&a, posicao, escopo);
+		item = buscaArrayYacc(&a, posicao, escopo);
     }
     if(item == NULL) {
         item = buscaArrayYacc(&a, posicao, -1);
         Item novoItem;
         copyItem(&novoItem, item);
-        strcpy(novoItem.tipo, buscaArrayYacc(&a, tipo, -1)->cadeia);
-	novoItem.escopo = escopo;
+        strcpy(novoItem.tipo, buscaArrayByPosition(&a, tipo)->cadeia);
+		novoItem.escopo = escopo;
 	if(categoria == PARAM || categoria == PARAM_ARRAY) {
         	novoItem.escopo++;
 	} 
@@ -374,7 +635,6 @@ int getIndexType(int posicao) {
 	}
         return 4;
     } else {
-	//printArray(&a);
         Item *i = buscaArray(&a, item->tipo);
         return getIndiceArray(&a, i);
     }
@@ -384,10 +644,21 @@ void yyerror(char *s) {
 	fprintf(stderr, "%s\n", s);
 }
 
-int main(void) {
-        initArray(&a, 50);
-        installPalavrasReservadas();
+int main(int argc, char** argv) {
+	yyin = fopen(argv[1],"r");
+	if(yyin == NULL){
+		printf("Arquivo fonte não existe!\n");
+		return 0;
+	}
+	yyout = fopen(argv[2],"w+");
+	// yyin = stdin;
+	// yyout = stdout;
+    initArray(&a, 50);
+    installPalavrasReservadas();
+    //printArray(&a);
  	yyparse();
+ 	fclose(yyin);
+ 	fclose(yyout);
 	return 0;
 }
 

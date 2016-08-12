@@ -52,51 +52,9 @@ erroNumESemDigito	{erroNumESemDigito1}|{erroNumESemDigito2}
 %{
 /*----------------------------- Rules -----------------------------*/
 %}
-{espaco}		{ colCount++; } 	
+{espaco}			{ colCount++; } 	
 {quebra-linha}		{ colCount=1;
-			lineCount++; }
-{ponto-virgula}		{ colCount++;
-			yylval = 17;
-			return (PONTO_VIRGULA); }
-{virgula}		{ colCount++;
-			yylval = 18;
-			return (VIRGULA); }
-{abre-chave}		{ colCount++;
-			yylval = 11;
-			return (ABRE_CHAVE); }
-{fecha-chave}		{ colCount++;
-			yylval = 12;
-			return (FECHA_CHAVE); }
-{abre-colchete}		{ colCount++;	
-			yylval = 13;
-			return (ABRE_COLCHETE); }
-{fecha-colchete}	{ colCount++;
-			yylval = 14;
-			return (FECHA_COLCHETE); }
-{abre-parenteses}	{ colCount++;
-			yylval = 15;
-			return (ABRE_PARENTESES); }      
-{fecha-parenteses}	{ colCount++;
-			yylval = 16;
-			return (FECHA_PARENTESES); } 
-"<"			{ colCount++;
-			yylval = 19;
-			return (RELOP); } 
-"<="			{ colCount+=2;
-			yylval = 20;
-			return (RELOP); } 
-">"			{ colCount++;
-			yylval = 23;
-			return (RELOP); } 
-">="			{ colCount+=2;
-			yylval = 24;
-			return (RELOP); } 
-"=="			{ colCount+=2;
-			yylval = 21;
-			return (RELOP); } 
-"!="			{ colCount+=2;
-			yylval = 22;
-			return (RELOP); } 
+					lineCount++; }
 int			{ colCount+=3;
 			yylval = 0;
 			return (INT); } 
@@ -113,31 +71,73 @@ void			{ colCount+=4;
 			yylval = 4;
 			return (VOID); } 
 if			{ colCount+=2;
-			yylval = 6;			
+			yylval = 5;			
 			return (IF); } 
 else			{ colCount+=4;
-			yylval = 7;
+			yylval = 6;
 			return (ELSE); } 
 "="			{ colCount++;
-			yylval = 8;
+			yylval = 7;
 			return (ATRIBUICAO); } 
 while			{ colCount+=5;
-			yylval = 9;
+			yylval = 8;
 			return (WHILE); } 
 return			{ colCount+=6;
-			yylval = 10;
-			return (RETURN); } 
-"-"			{ colCount++;
-			yylval = 26;
-			return (SUBTRACAO); } 
+				yylval = 9;
+				return (RETURN); } 
+{abre-chave}		{ colCount++;
+					yylval = 10;
+					return (ABRE_CHAVE); }
+{fecha-chave}		{ colCount++;
+					yylval = 11;
+					return (FECHA_CHAVE); }
+{abre-colchete}		{ colCount++;	
+					yylval = 12;
+					return (ABRE_COLCHETE); }
+{fecha-colchete}	{ colCount++;
+					yylval = 13;
+					return (FECHA_COLCHETE); }
+{abre-parenteses}	{ colCount++;
+					yylval = 14;
+					return (ABRE_PARENTESES); }      
+{fecha-parenteses}	{ colCount++;
+					yylval = 15;
+					return (FECHA_PARENTESES); } 
+{ponto-virgula}		{ colCount++;
+					yylval = 16;
+					return (PONTO_VIRGULA); }
+{virgula}			{ colCount++;
+					yylval = 17;
+					return (VIRGULA); }
+"<"			{ colCount++;
+			yylval = 18;
+			return (RELOP); } 
+"<="			{ colCount+=2;
+			yylval = 19;
+			return (RELOP); } 
+"=="		{ colCount+=2;
+			yylval = 20;
+			return (RELOP); } 
+">"			{ colCount++;
+			yylval = 21;
+			return (RELOP); } 
+">="		{ colCount+=2;
+			yylval = 22;
+			return (RELOP); } 
+"!="			{ colCount+=2;
+			yylval = 23;
+			return (RELOP); } 
 "+"			{ colCount++;
-			yylval = 25;
+			yylval = 24;
 			return (SOMA); } 
+"-"			{ colCount++;
+			yylval = 25;
+			return (SUBTRACAO); } 
 "*"			{ colCount++;
-			yylval = 27;
+			yylval = 26;
 			return (MULT); } 
 "/"			{ colCount++;
-			yylval = 28;
+			yylval = 27;
 			return (DIV); } 
 {comentario}		{ /*atualizarLineEColCount(yytext); /*fprintf(yyout,"%s (COMENTARIO)\n", yytext);*/ }
 {num-int}		{ colCount+=strlen(yytext);
@@ -169,35 +169,36 @@ return			{ colCount+=6;
 
 
 void installPalavrasReservadas() {
-	insertArray(&a, getItemLex("int", INT));
-        insertArray(&a, getItemLex("float", FLOAT));
-        insertArray(&a, getItemLex("char", CHAR));
-        insertArray(&a, getItemLex("struct", STRUCT));
-        insertArray(&a, getItemLex("void", VOID));
-        insertArray(&a, getItemLex("if", IF));
-        insertArray(&a, getItemLex("else", ELSE));
-        insertArray(&a, getItemLex("=", ATRIBUICAO));
-        insertArray(&a, getItemLex("while", WHILE));
-        insertArray(&a, getItemLex("return", RETURN));
-        insertArray(&a, getItemLex("{", ABRE_CHAVE));
-        insertArray(&a, getItemLex("}", FECHA_CHAVE));
-        insertArray(&a, getItemLex("[", ABRE_COLCHETE));
-        insertArray(&a, getItemLex("]", FECHA_COLCHETE));
-        insertArray(&a, getItemLex("(", ABRE_PARENTESES));
-        insertArray(&a, getItemLex(")", FECHA_PARENTESES));
-        insertArray(&a, getItemLex(";", PONTO_VIRGULA));
-        insertArray(&a, getItemLex(",", VIRGULA));
-        insertArray(&a, getItemLex("<", LT));
-        insertArray(&a, getItemLex("<=", LE));
-        insertArray(&a, getItemLex("==", EQ));
-        insertArray(&a, getItemLex(">", GT));
-        insertArray(&a, getItemLex(">=", GE));
-        insertArray(&a, getItemLex("+", SOMA));
-        insertArray(&a, getItemLex("-",SUBTRACAO));
-        insertArray(&a, getItemLex("*", MULT));
-        insertArray(&a, getItemLex("/", DIV));
+    insertArray(&a, getItemLex("int", INT));
+    insertArray(&a, getItemLex("float", FLOAT));
+    insertArray(&a, getItemLex("char", CHAR));
+    insertArray(&a, getItemLex("struct", STRUCT));
+    insertArray(&a, getItemLex("void", VOID));
+    insertArray(&a, getItemLex("if", IF));
+    insertArray(&a, getItemLex("else", ELSE));
+    insertArray(&a, getItemLex("=", ATRIBUICAO));
+    insertArray(&a, getItemLex("while", WHILE));
+    insertArray(&a, getItemLex("return", RETURN));
+    insertArray(&a, getItemLex("{", ABRE_CHAVE));
+    insertArray(&a, getItemLex("}", FECHA_CHAVE));
+    insertArray(&a, getItemLex("[", ABRE_COLCHETE));
+    insertArray(&a, getItemLex("]", FECHA_COLCHETE));
+    insertArray(&a, getItemLex("(", ABRE_PARENTESES));
+    insertArray(&a, getItemLex(")", FECHA_PARENTESES));
+    insertArray(&a, getItemLex(";", PONTO_VIRGULA));
+    insertArray(&a, getItemLex(",", VIRGULA));
+    insertArray(&a, getItemLex("<", LT));
+    insertArray(&a, getItemLex("<=", LE));
+    insertArray(&a, getItemLex("==", EQ));
+    insertArray(&a, getItemLex(">", GT));
+    insertArray(&a, getItemLex(">=", GE));
+    insertArray(&a, getItemLex("!=", NE));
+    insertArray(&a, getItemLex("+", SOMA));
+    insertArray(&a, getItemLex("-",SUBTRACAO));
+    insertArray(&a, getItemLex("*", MULT));
+    insertArray(&a, getItemLex("/", DIV));
 }
 
 int yywrap(){
-    	return 0;
+    return 0;
 }

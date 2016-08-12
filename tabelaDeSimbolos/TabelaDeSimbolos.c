@@ -151,6 +151,15 @@ Item getItemLex(char* cadeia, int token) {
     return item;
 }
 
+Item getItemEscopo(char* cadeia, int escopo, char* tipo) {
+    Item item;
+    strcpy(item.cadeia, cadeia);
+    item.escopo = escopo;
+    strcpy(item.tipo, tipo);
+    strcpy(item.valor, "");
+    return item;
+}
+
 Item getItem(char* cadeia, int token, int categoria,
     char* tipo, char* valor, int escopo) {
     Item item;
